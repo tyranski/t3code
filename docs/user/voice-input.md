@@ -161,3 +161,42 @@ same environment, language, and dictionary as the composer, but skips transcript
 cleanup even when it is on, so you see what the model heard. Browser recording
 needs HTTPS or localhost and microphone permission; for a remote server over
 plain HTTP, use the desktop app.
+
+## Talk to threads hands-free (iOS)
+
+With **Realtime Conversational Agent** on, the iPhone app calls you through an
+[ElevenLabs agent](https://elevenlabs.io/docs/eleven-agents/overview) whenever a
+thread needs you: an approval, a question, a plan to review, a failure, or
+finished work. It works with the phone locked and AirPods in. Say your answer
+and it goes back to the thread, then the call ends. Each call is billed by
+ElevenLabs.
+
+Set up the agent once in the ElevenLabs dashboard:
+
+1. Set the **first message** to `{{announcement}}`.
+2. Give the **system prompt** the thread's context, for example:
+
+   ```
+   You relay a coding agent's work to its user, who is listening on earbuds.
+   Thread: {{thread_title}}. Reason for this call: {{item_kind}}.
+   Details: {{details}}
+   Summarize the details in one or two spoken sentences, then ask what to do.
+   Act only through your tools: respond_to_approval for approvals,
+   answer_question for questions (pass the question id from the details),
+   send_message for anything else, leave_for_later if the user wants to wait.
+   After a tool succeeds, confirm in a few words and end the call.
+   ```
+
+3. Add four **client tools**, each with **Wait for response** on:
+   - `respond_to_approval`: `decision` (string: `approve`, `approve_for_session`, or `decline`), optional `feedback` (string).
+   - `answer_question`: `question_id` (string), `answer` (string; for several choices, separate option names with commas).
+   - `send_message`: `text` (string).
+   - `leave_for_later`: no parameters.
+4. Turn on the **End call** system tool.
+
+Then, on the iPhone, open **Settings → Voice**, enter the agent ID, and for a
+private agent also an ElevenLabs API key. The key stays in this phone's
+keychain. Turn on **Realtime Conversational Agent** and allow microphone
+access. Threads already waiting when you turn it on are not announced; new
+ones are. If a call fails while the phone is locked, the reason shows under the
+switch.

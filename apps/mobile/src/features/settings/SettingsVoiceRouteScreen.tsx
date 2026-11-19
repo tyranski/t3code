@@ -40,6 +40,7 @@ import { ListActionRow as SettingsActionRow } from "../../components/ui/ListActi
 import { SettingsDragHandle } from "./components/SettingsDragHandle";
 import { SettingsScreen } from "./components/SettingsScreen";
 import { SettingsSection } from "./components/SettingsSection";
+import { VoiceAgentSection } from "../voice-agent/VoiceAgentSection";
 import {
   deviceMicrophoneOrder,
   localVoiceTranscriberAtom,
@@ -293,6 +294,7 @@ export function SettingsVoiceRouteScreen() {
         contentContainerClassName="gap-3 px-5 pt-4"
         contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 18) + 18 }}
       >
+        <VoiceAgentSection />
         <SettingsSection title={gt("Transcribe on")}>
           <ListChoiceRow
             label={gt("This device")}

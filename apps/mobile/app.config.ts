@@ -385,10 +385,13 @@ const config: ExpoConfig = {
       {
         microphonePermission: "Allow T3 Code to use your microphone for voice input.",
         recordAudioAndroid: true,
-        enableBackgroundPlayback: false,
-        enableBackgroundRecording: false,
+        // The Realtime Conversational Agent keeps a silent session alive and records while locked.
+        enableBackgroundPlayback: true,
+        enableBackgroundRecording: true,
       },
     ],
+    "@livekit/react-native-expo-plugin",
+    "@config-plugins/react-native-webrtc",
     [
       "expo-camera",
       {
