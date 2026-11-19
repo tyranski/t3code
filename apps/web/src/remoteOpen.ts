@@ -21,6 +21,7 @@ export interface RemoteOpenHost {
   readonly kind: "ssh-alias" | RemoteOpenTarget["kind"];
   readonly host: string;
   readonly username?: string;
+  readonly devContainerFolder?: string;
 }
 
 export type RemoteOpenState =
@@ -52,7 +53,11 @@ function parseHostname(url: string): string | null {
 
 export function resolveRemoteOpenState(input: {
   readonly target: ConnectionTarget | null;
-  readonly sshTarget: { readonly alias: string; readonly username: string | null } | null;
+  readonly sshTarget: {
+    readonly alias: string;
+    readonly username: string | null;
+    readonly devContainerFolder?: string;
+  } | null;
   readonly remoteOpenTargets: ReadonlyArray<RemoteOpenTarget> | undefined;
   readonly isDesktopRenderer: boolean;
   readonly hostEnvironmentId: string | null;
@@ -87,6 +92,9 @@ export function resolveRemoteOpenState(input: {
         kind: "ssh-alias",
         host,
         ...(username === null ? {} : { username }),
+        ...(input.sshTarget.devContainerFolder === undefined
+          ? {}
+          : { devContainerFolder: input.sshTarget.devContainerFolder }),
       },
     };
   }
@@ -103,7 +111,8 @@ function remoteOpenStatesEqual(previous: RemoteOpenState, next: RemoteOpenState)
   return (
     previous.host.kind === next.host.kind &&
     previous.host.host === next.host.host &&
-    previous.host.username === next.host.username
+    previous.host.username === next.host.username &&
+    previous.host.devContainerFolder === next.host.devContainerFolder
   );
 }
 

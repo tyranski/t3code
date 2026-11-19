@@ -29,14 +29,17 @@ describe("ElectronShell", () => {
       openExternalMock.mockResolvedValue(undefined);
 
       const electronShell = yield* ElectronShell.ElectronShell;
-      const result = yield* electronShell.openExternal(
+      const urls = [
         "vscode://vscode-remote/ssh-remote+user%40example.com/home/user/project",
-      );
+        "vscode://vscode-remote/dev-container+2f686f6d652f6d652f617070/workspaces/app",
+      ];
+      const results = yield* Effect.forEach(urls, (url) => electronShell.openExternal(url));
 
-      assert.equal(result, true);
-      assert.deepEqual(openExternalMock.mock.calls, [
-        ["vscode://vscode-remote/ssh-remote+user%40example.com/home/user/project"],
-      ]);
+      assert.deepEqual(results, [true, true]);
+      assert.deepEqual(
+        openExternalMock.mock.calls,
+        urls.map((url) => [url]),
+      );
     }).pipe(Effect.provide(ElectronShell.layer)),
   );
 

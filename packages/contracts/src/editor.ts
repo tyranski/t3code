@@ -202,12 +202,23 @@ export const buildRemoteOpenUrl = (input: {
   readonly username?: string;
   readonly absolutePath: string;
   readonly isFile?: boolean;
+  /** Host folder of a dev container; its SSH alias exists only in T3's private ssh config. */
+  readonly devContainerFolder?: string;
 }): string | undefined => {
   const scheme = remoteSchemeForEditor(input.editor);
   if (scheme === undefined) {
     return undefined;
   }
   const editor = EDITORS.find((candidate) => candidate.id === input.editor);
+  if (input.devContainerFolder !== undefined) {
+    // Only the VS Code family's Dev Containers extension can reach a local container.
+    if (editor === undefined || editor.launchStyle !== "goto") return undefined;
+    const folderHex = Array.from(new TextEncoder().encode(input.devContainerFolder), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
+    const containerPath = input.absolutePath.split("/").map(encodeURIComponent).join("/");
+    return `${scheme}://vscode-remote/dev-container+${folderHex}${containerPath}${input.isFile ? ":1:1" : ""}`;
+  }
   if (editor !== undefined && "jetbrainsProductCode" in editor) {
     const params = new URLSearchParams({
       h: input.host,

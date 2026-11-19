@@ -118,6 +118,28 @@ describe("resolveRemoteOpenState", () => {
     );
   });
 
+  it("opens a dev container through Dev Containers, since its SSH alias is private to T3", () => {
+    const state = resolveRemoteOpenState({
+      target: new SshConnectionTarget({ environmentId, label: "app", connectionId: "ssh-1" }),
+      sshTarget: {
+        alias: "t3-devcontainer-app",
+        username: "ros",
+        devContainerFolder: "/home/me/app",
+      },
+      isDesktopRenderer: true,
+      remoteOpenTargets: undefined,
+      hostEnvironmentId: null,
+    });
+    if (state.mode !== "remote-links") throw new Error("Expected a remote link");
+    const input = { ...state.host, absolutePath: "/workspaces/app" };
+    // "/home/me/app" as UTF-8 hex, the form Dev Containers decodes as the host folder.
+    expect(buildRemoteOpenUrl({ editor: "vscode", ...input })).toBe(
+      "vscode://vscode-remote/dev-container+2f686f6d652f6d652f617070/workspaces/app",
+    );
+    expect(buildRemoteOpenUrl({ editor: "zed", ...input })).toBeUndefined();
+    expect(buildRemoteOpenUrl({ editor: "idea", ...input })).toBeUndefined();
+  });
+
   it.each([
     { alias: "server", username: "admin-user" },
     { alias: "admin-user@server", username: null },

@@ -401,6 +401,8 @@ export const DesktopSshEnvironmentTargetSchema = Schema.Struct({
   port: Schema.NullOr(Schema.Number),
   /** An ssh config file T3 wrote for this target, passed as `ssh -F`, such as a dev container's. */
   sshConfigPath: Schema.optionalKey(Schema.String),
+  /** The host folder a dev container target was started from; editors open it through Dev Containers. */
+  devContainerFolder: Schema.optionalKey(Schema.String),
 });
 export type DesktopSshEnvironmentTarget = typeof DesktopSshEnvironmentTargetSchema.Type;
 

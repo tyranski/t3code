@@ -32,6 +32,8 @@ const isAppLaunchUrl = (url: URL) =>
   url.hash.length === 0 &&
   [...url.searchParams.keys()].join() === "text";
 
+const VSCODE_REMOTE_AUTHORITY = /^\/(?:ssh-remote\+[^/]+|dev-container\+[0-9a-f]+)(?:\/|$)/;
+
 // Zed embeds [user@]host in the path; reject passwords and ports there.
 const ZED_SSH_PATHNAME = /^\/(?:[^/@:]+@)?[^/@:]+\/.*$/;
 
@@ -45,9 +47,7 @@ const isRemoteEditorUrl = (url: URL) =>
       ? url.host === "gateway" &&
         url.pathname === "/ssh/environment" &&
         (url.searchParams.get("h") ?? "").length > 0
-      : url.host === "vscode-remote" &&
-        url.pathname.startsWith("/ssh-remote+") &&
-        url.pathname.length > "/ssh-remote+".length);
+      : url.host === "vscode-remote" && VSCODE_REMOTE_AUTHORITY.test(url.pathname));
 
 export function parseSafeExternalUrl(rawUrl: unknown): Option.Option<string> {
   if (typeof rawUrl !== "string") {

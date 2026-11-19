@@ -203,7 +203,14 @@ const make = Effect.gen(function* () {
       .pipe(Effect.mapError(configError));
 
     return {
-      target: { alias, hostname: alias, username: remoteUser, port: null, sshConfigPath },
+      target: {
+        alias,
+        hostname: alias,
+        username: remoteUser,
+        port: null,
+        sshConfigPath,
+        devContainerFolder: workspaceFolder,
+      },
       remoteWorkspaceFolder,
     };
   });
