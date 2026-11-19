@@ -3214,7 +3214,11 @@
   "0c0f9117b206ced7": "Dev-Container",
   "0adbceb141594026": [
     "Neuer Thread in ",
-    { "i": 1, "k": "_gt_value_1", "v": "v" },
+    {
+      "i": 1,
+      "k": "_gt_value_1",
+      "v": "v"
+    },
     ", in seinem Dev-Container"
   ],
   "cd8fd5a47060164b": [

@@ -3213,7 +3213,11 @@
   "0c0f9117b206ced7": "Contenedor de desarrollo",
   "0adbceb141594026": [
     "Nuevo hilo en ",
-    { "i": 1, "k": "_gt_value_1", "v": "v" },
+    {
+      "i": 1,
+      "k": "_gt_value_1",
+      "v": "v"
+    },
     ", en su contenedor de desarrollo"
   ],
   "cd8fd5a47060164b": [

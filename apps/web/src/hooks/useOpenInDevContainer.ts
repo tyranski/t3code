@@ -7,7 +7,7 @@ import { formatDesktopSshConnectionError } from "../components/settings/Connecti
 import { toastManager } from "../components/ui/toast";
 import { connectSshEnvironment as connectSshEnvironmentAtom } from "../connection/onboarding";
 import { newProjectId } from "../lib/utils";
-import { waitForProject, waitForProjectAtPath } from "../state/entities";
+import { findProjectAtPathWhenLoaded, waitForProject } from "../state/entities";
 import { waitForEnvironmentConnected } from "../state/environments";
 import { projectEnvironment } from "../state/projects";
 import { useAtomCommand } from "../state/use-atom-command";
@@ -61,29 +61,29 @@ export function useOpenInDevContainer() {
         fail(gt("The T3 server in the dev container did not connect. Try again."));
         return;
       }
-      const projectId = newProjectId();
-      const created = await createProject({
+      // The server hides why a create failed, so reuse a project opened here before.
+      const existing = await findProjectAtPathWhenLoaded(
         environmentId,
-        input: {
-          projectId,
-          title,
-          workspaceRoot: connection.remoteWorkspaceFolder,
-          createWorkspaceRootIfMissing: false,
-          defaultModelSelection: null,
-        },
-      });
-      let projectRef = scopeProjectRef(environmentId, projectId);
-      if (created._tag === "Failure") {
-        const message = formatDesktopSshConnectionError(squashAtomCommandFailure(created));
-        // Opened before: start the new thread in the project already there.
-        const existing = message.includes("already exists")
-          ? await waitForProjectAtPath(environmentId, connection.remoteWorkspaceFolder)
-          : null;
-        if (existing === null) {
-          fail(message);
+        connection.remoteWorkspaceFolder,
+      );
+      let projectRef = existing ? scopeProjectRef(environmentId, existing.id) : null;
+      if (projectRef === null) {
+        const projectId = newProjectId();
+        const created = await createProject({
+          environmentId,
+          input: {
+            projectId,
+            title,
+            workspaceRoot: connection.remoteWorkspaceFolder,
+            createWorkspaceRootIfMissing: false,
+            defaultModelSelection: null,
+          },
+        });
+        if (created._tag === "Failure") {
+          fail(formatDesktopSshConnectionError(squashAtomCommandFailure(created)));
           return;
         }
-        projectRef = scopeProjectRef(environmentId, existing.id);
+        projectRef = scopeProjectRef(environmentId, projectId);
       }
       await waitForProject(projectRef);
       await openThread(projectRef);

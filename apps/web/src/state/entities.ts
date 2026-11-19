@@ -39,6 +39,7 @@ import { environmentServerConfigsAtom } from "./server";
 import {
   allEnvironmentProjectSnapshotsReadyAtom,
   allEnvironmentShellsBootstrappedAtom,
+  environmentShell,
 } from "./shell";
 import { environmentThreadDetails, environmentThreadShells } from "./threads";
 import { waitForAtomValue } from "./waitForAtomValue";
@@ -297,24 +298,24 @@ export function readProjects(): ReadonlyArray<EnvironmentProject> {
   return appAtomRegistry.get(environmentProjects.projectsAtom);
 }
 
-/** The environment's project at this folder once its projects load, or null after the timeout. */
-export async function waitForProjectAtPath(
+/** The environment's project at this folder, once its project list has loaded; null if it has none. */
+export async function findProjectAtPathWhenLoaded(
   environmentId: EnvironmentId,
   workspaceRoot: string,
-  timeoutMs = 10_000,
+  timeoutMs = 15_000,
 ): Promise<EnvironmentProject | null> {
-  const find = (projects: ReadonlyArray<EnvironmentProject>) =>
-    findProjectByPath(
-      projects.filter((project) => project.environmentId === environmentId),
-      workspaceRoot,
-    ) ?? null;
   await waitForAtomValue({
     registry: appAtomRegistry,
-    atom: environmentProjects.projectsAtom,
-    predicate: (projects) => find(projects) !== null,
+    atom: environmentShell.hasSnapshotAtom(environmentId),
+    predicate: (hasSnapshot) => hasSnapshot,
     timeoutMs,
   });
-  return find(readProjects());
+  return (
+    findProjectByPath(
+      readProjects().filter((project) => project.environmentId === environmentId),
+      workspaceRoot,
+    ) ?? null
+  );
 }
 
 export function waitForProject(
