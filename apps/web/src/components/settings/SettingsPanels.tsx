@@ -602,6 +602,7 @@ export function useSettingsRestore(onRestored?: () => void) {
     ...(settings.keepAwakeWhileAgentsWork !== DEFAULT_UNIFIED_SETTINGS.keepAwakeWhileAgentsWork
       ? [gt("Keep awake while agents work")]
       : []),
+    ...(settings.awayMode !== DEFAULT_UNIFIED_SETTINGS.awayMode ? [gt("Away mode")] : []),
     ...(settings.defaultThreadEnvMode !== DEFAULT_UNIFIED_SETTINGS.defaultThreadEnvMode
       ? [gt("New thread mode")]
       : []),
@@ -730,6 +731,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       continueThreadsAfterServerUpdate: DEFAULT_UNIFIED_SETTINGS.continueThreadsAfterServerUpdate,
       backgroundActivity: DEFAULT_UNIFIED_SETTINGS.backgroundActivity,
       keepAwakeWhileAgentsWork: DEFAULT_UNIFIED_SETTINGS.keepAwakeWhileAgentsWork,
+      awayMode: DEFAULT_UNIFIED_SETTINGS.awayMode,
       backgroundActivityProfile: DEFAULT_UNIFIED_SETTINGS.backgroundActivityProfile,
       automaticGitFetchInterval: DEFAULT_UNIFIED_SETTINGS.automaticGitFetchInterval,
       providerHealthRefreshInterval: DEFAULT_UNIFIED_SETTINGS.providerHealthRefreshInterval,
@@ -2414,6 +2416,30 @@ export function MaintenanceSettingsPanel() {
                 updateSettings({ keepAwakeWhileAgentsWork: Boolean(checked) })
               }
               aria-label={gt("Keep awake while agents work")}
+            />
+          }
+        />
+        <SettingsRow
+          serverScoped
+          settingKeys={["awayMode"]}
+          {...setting("away-mode")}
+          description={gt(
+            "Tell agents you are away. New messages ask them to keep working toward the current goal without questions, and to decline new scope.",
+          )}
+          resetAction={
+            settings.awayMode !== DEFAULT_UNIFIED_SETTINGS.awayMode ? (
+              <SettingResetButton
+                ariaLabel={gt("Reset away mode to default")}
+                onClick={() => updateSettings({ awayMode: DEFAULT_UNIFIED_SETTINGS.awayMode })}
+              />
+            ) : null
+          }
+          control={
+            <ScopedSwitch
+              settingKeys={["awayMode"]}
+              checked={settings.awayMode}
+              onCheckedChange={(checked) => updateSettings({ awayMode: Boolean(checked) })}
+              aria-label={gt("Away mode")}
             />
           }
         />

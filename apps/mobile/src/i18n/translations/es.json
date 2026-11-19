@@ -3552,6 +3552,8 @@
   "36a43717ed18c17f": "Reanuda los hilos interrumpidos tras una actualización o un reinicio.",
   "d24e3cd7bcf08490": "Mantener activo mientras trabajan los agentes",
   "ab4c7ddbe60d1ddc": "Evita que el equipo entre en reposo mientras los agentes trabajan. Cerrar la tapa de un portátil lo pone en reposo igualmente.",
+  "087fad3ef1281e03": "Modo ausente",
+  "5eb61aeaf52d785f": "Los agentes siguen trabajando hacia el objetivo actual sin preguntar y rechazan nuevo alcance.",
   "bb906952ffdf6ae4": "Los checkouts de proyecto seleccionados usan valores distintos",
   "5cb964736f071766": "Los entornos seleccionados usan valores distintos",
   "3c65f5fcf5915911": "Mixto",

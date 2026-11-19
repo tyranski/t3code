@@ -57,6 +57,7 @@ import * as ProjectService from "../project/ProjectService.ts";
 import * as ProviderAuthService from "../provider/ProviderAuthService.ts";
 import * as ServerSettings from "../serverSettings.ts";
 import * as ContextHandoffService from "./ContextHandoffService.ts";
+import { AWAY_MODE_NOTE } from "./AwayModeNote.ts";
 import { withInlineContext } from "./ContextHandoffDelivery.ts";
 import * as EventSink from "./EventSink.ts";
 import * as SqlitePersistence from "../persistence/Sqlite.ts";
@@ -92,11 +93,14 @@ const normalize = (target: string) => {
   }
   return `/${parts.join("/")}`;
 };
-const layerWorktreeLocation = (worktreesDir = managedWorktreesDir) =>
+const layerWorktreeLocation = (
+  worktreesDir = managedWorktreesDir,
+  settings: Parameters<typeof ServerSettings.layerTest>[0] = {},
+) =>
   Layer.mergeAll(
     Path.layer,
     Layer.mock(ServerConfig.ServerConfig)({ worktreesDir } as ServerConfig.ServerConfig["Service"]),
-    ServerSettings.layerTest(),
+    ServerSettings.layerTest(settings),
   );
 
 function startWithMissingWorktree(
@@ -449,6 +453,7 @@ function makeLocalCommandHarness(input: {
   readonly nativeResumeUnsupported?: boolean;
   readonly steeringRestart?: boolean;
   readonly nativeGoals?: boolean;
+  readonly awayMode?: boolean;
   readonly canForkWhileSourceRunning?: boolean;
   readonly goalDriver?: "opencode" | "antigravity";
   readonly worktreePath?: string;
@@ -1317,7 +1322,10 @@ function makeLocalCommandHarness(input: {
         }),
         IdAllocator.layer,
         Layer.mock(TurnItemPositionStore.TurnItemPositionStoreV2)({}),
-        layerWorktreeLocation(input.worktreesDir),
+        layerWorktreeLocation(
+          input.worktreesDir,
+          input.awayMode === undefined ? {} : { awayMode: input.awayMode },
+        ),
         input.fileSystem === undefined
           ? FileSystem.layerNoop({ exists: () => Effect.succeed(true) })
           : Layer.succeed(FileSystem.FileSystem, input.fileSystem),
@@ -2171,6 +2179,27 @@ effectIt.effect("sends new steering text when restarting a manual continuation",
     expect(harness.startTurn.mock.calls[0]?.[0].message.text).toBe("New steering instruction");
     expect(harness.startRootRun.mock.calls[0]?.[0].resume).toBe(false);
   }),
+);
+
+effectIt.effect.each([
+  { awayMode: false, text: "Fix the build", sent: "Fix the build" },
+  {
+    awayMode: true,
+    text: "Fix the build",
+    sent: withInlineContext(AWAY_MODE_NOTE, "Fix the build"),
+  },
+] as const)(
+  "prepends the away note to prompts while away mode is on: %j",
+  ({ awayMode, text, sent }) =>
+    Effect.gen(function* () {
+      const harness = makeLocalCommandHarness({
+        text,
+        awayMode,
+        sideChat: { contextRun: "delivered" },
+      });
+      yield* harness.start;
+      expect(harness.startTurn.mock.calls.map(([turn]) => turn.message.text)).toEqual([sent]);
+    }),
 );
 
 effectIt.effect("refuses unsupported resume instead of manufacturing a user prompt", () =>

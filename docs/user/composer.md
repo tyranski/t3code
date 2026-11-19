@@ -324,6 +324,19 @@ its progress.
   stop the turn only when it is working on the goal. Other goal commands wait for
   the turn to end.
 
+## Away mode
+
+Turn on away mode before you step away so agents keep going instead of stopping to ask.
+On web and desktop, use the plane button at the bottom of the sidebar or **Settings → Maintenance → Away mode**.
+On mobile, use **Settings → Maintenance → Away mode**. The setting belongs to the environment, so
+every device sees the same state.
+
+While it is on, each message you send tells the agent you are away: work toward the current goal without
+asking, choose the reasonable option and note the assumption, decline new scope, and stop only when the
+work is done or blocked on a decision only you can make. It applies from the next message, so a turn
+already running keeps its instructions. Pair it with [`/goal`](#goals) for long work, and with a permission
+mode that does not wait for approvals. Turn it off when you are back.
+
 ## Context in your message
 
 Context you attach lands where your cursor is, as a chip inside your text: a terminal excerpt,

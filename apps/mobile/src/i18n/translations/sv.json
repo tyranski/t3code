@@ -3558,6 +3558,8 @@
   "36a43717ed18c17f": "Återuppta avbrutna trådar efter en uppdatering eller omstart.",
   "d24e3cd7bcf08490": "Håll vaken medan agenter arbetar",
   "ab4c7ddbe60d1ddc": "Hindra datorn från att gå i viloläge medan agenter arbetar. Att stänga locket på en bärbar dator försätter den ändå i viloläge.",
+  "087fad3ef1281e03": "Bortaläge",
+  "5eb61aeaf52d785f": "Agenterna fortsätter mot det aktuella målet utan att fråga och tackar nej till nytt omfång.",
   "bb906952ffdf6ae4": "Valda projektutcheckningar använder olika värden",
   "5cb964736f071766": "Valda miljöer använder olika värden",
   "3c65f5fcf5915911": "Blandat",

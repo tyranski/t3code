@@ -833,6 +833,13 @@ export const SETTINGS_SEARCH_ITEMS = [
     searchTerms: [msg("caffeinate sleep prevent stay awake power laptop lid inhibit")],
   },
   {
+    id: "away-mode",
+    title: msg("Away mode"),
+    to: "/settings/maintenance",
+    scope: "environment-defaults",
+    searchTerms: [msg("away unattended autopilot keep working no questions vacation afk")],
+  },
+  {
     id: "background-activity",
     title: msg("Background activity"),
     to: "/settings/maintenance",

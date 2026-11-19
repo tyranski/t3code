@@ -1,11 +1,22 @@
-import { ArrowLeftIcon, ArrowRightIcon, ChartNoAxesColumnIcon, SettingsIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ChartNoAxesColumnIcon,
+  PlaneIcon,
+  SettingsIcon,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { T, useGT } from "gt-react";
 import { memo } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 
 import { useAtomValue } from "@effect/atom-react";
-import { useEnvironmentIdentificationMode } from "../../hooks/useSettings";
+import {
+  useEnvironmentIdentificationMode,
+  usePrimarySettings,
+  usePrimarySettingsAvailable,
+  useUpdatePrimarySettings,
+} from "../../hooks/useSettings";
 import { shortcutLabelForCommand } from "../../keybindings";
 import {
   navigateHistory,
@@ -204,17 +215,25 @@ function SidebarUtilityItem({
   icon,
   label,
   onClick,
+  pressed,
 }: {
   icon: ReactNode;
   label: string;
   onClick: () => void;
+  pressed?: boolean;
 }) {
   return (
     <SidebarMenuItem className="shrink-0">
       <Tooltip>
         <TooltipTrigger
           render={
-            <SidebarMenuButton aria-label={label} onClick={onClick} size="icon">
+            <SidebarMenuButton
+              aria-label={label}
+              aria-pressed={pressed}
+              isActive={pressed === true}
+              onClick={onClick}
+              size="icon"
+            >
               {icon}
             </SidebarMenuButton>
           }
@@ -222,6 +241,26 @@ function SidebarUtilityItem({
         <TooltipPopup side="top">{label}</TooltipPopup>
       </Tooltip>
     </SidebarMenuItem>
+  );
+}
+
+function SidebarAwayModeItem() {
+  const gt = useGT();
+  const available = usePrimarySettingsAvailable();
+  const awayMode = usePrimarySettings((settings) => settings.awayMode);
+  const updateSettings = useUpdatePrimarySettings();
+  if (!available) return null;
+  return (
+    <SidebarUtilityItem
+      icon={<PlaneIcon />}
+      label={
+        awayMode
+          ? gt("Away mode is on: agents keep working without asking. Click to turn off.")
+          : gt("Turn on away mode")
+      }
+      onClick={() => updateSettings({ awayMode: !awayMode })}
+      pressed={awayMode}
+    />
   );
 }
 
@@ -305,6 +344,7 @@ const SidebarUtilityMenu = memo(function SidebarUtilityMenu() {
             label={gt("Usage")}
             onClick={handleUsageClick}
           />
+          <SidebarAwayModeItem />
         </>
       )}
       <SidebarThreadUndoNotice />
