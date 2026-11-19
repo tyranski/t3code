@@ -58,6 +58,14 @@ in a new thread's model picker to add or remove them. A regular click returns to
 single model. Choose a base branch and send. Each selection starts a separate thread
 and worktree while you stay in the new thread composer. This requires a Git project.
 
+## Inbox
+
+On web and desktop, the **Inbox** at the top of the sidebar lists every thread that waits on you,
+across all projects and machines, newest first: approvals, questions, guest requests, failed runs,
+and usage limits. Each row shows why it is there, the project, and how long ago. Click a row to open
+the thread; it leaves the inbox once you answer, approve, or open a failed run. Settled threads stay
+out of it. The inbox hides when nothing waits on you, and its header collapses it.
+
 ## Pin and reorder threads
 
 Pin a thread from its menu to keep it above your active work.

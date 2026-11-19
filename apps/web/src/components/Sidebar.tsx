@@ -139,6 +139,7 @@ import { startNewThreadFromContext } from "../lib/chatThreadActions";
 import { useClientSettings } from "../hooks/useSettings";
 import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { SidebarInbox } from "./sidebar/SidebarInbox";
 import { useNowMinute } from "../hooks/useNowMinute";
 import {
   useEnvironmentIdentities,
@@ -3222,6 +3223,17 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
         }
       >
         <SidebarGroup className="flex-1" role="presentation">
+          {isSearchingThreads ? null : (
+            <SidebarInbox
+              threads={filterSidebarV2VisibleThreads(threads, null, delegatedUnderParent)}
+              projectName={(thread) =>
+                projectDisplayNameByKey.get(`${thread.environmentId}:${thread.projectId}`) ?? null
+              }
+              onOpen={(thread) =>
+                void navigateToThread(scopeThreadRef(thread.environmentId, thread.id))
+              }
+            />
+          )}
           {isSearchingThreads ? (
             threadSearchResults.length > 0 ? (
               <TooltipProvider
