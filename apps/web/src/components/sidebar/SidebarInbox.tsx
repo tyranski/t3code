@@ -1,16 +1,19 @@
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/models";
+import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { Schema } from "effect";
 import { useGT, useMessages } from "gt-react";
 
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useNowMinute } from "../../hooks/useNowMinute";
+import { useUiStateStore } from "../../uiStateStore";
 import { formatRelativeTimeLabel } from "../../timestampFormat";
+import { resolveThreadLastVisitedAt } from "../Sidebar.logic";
 import { CollapsibleSectionHeader } from "../ui/collapsible-section-header";
 import { selectSidebarInboxItems, type SidebarInboxReason } from "./SidebarInbox.logic";
 
 const INBOX_EXPANDED_KEY = "t3code:sidebar:inbox-expanded";
 
-/** Cross-project list of threads waiting on the user, above the thread list. */
+/** Cross-project list of threads waiting on the user or finished unread, above the thread list. */
 export function SidebarInbox(props: {
   readonly threads: readonly EnvironmentThreadShell[];
   readonly projectName: (thread: EnvironmentThreadShell) => string | null;
@@ -20,8 +23,17 @@ export function SidebarInbox(props: {
   const messages = useMessages();
   const nowMinute = useNowMinute();
   const [expanded, setExpanded] = useLocalStorage(INBOX_EXPANDED_KEY, true, Schema.Boolean);
-  const items = selectSidebarInboxItems(props.threads);
-  if (items.length === 0) return null;
+  const localLastVisitedAtById = useUiStateStore((state) => state.threadLastVisitedAtById);
+  const items = selectSidebarInboxItems(
+    props.threads.map((thread) => ({
+      ...thread,
+      lastVisitedAt:
+        resolveThreadLastVisitedAt(
+          thread.lastVisitedAt,
+          localLastVisitedAtById[scopedThreadKey(scopeThreadRef(thread.environmentId, thread.id))],
+        ) ?? null,
+    })),
+  );
   const reasonLabel = (reason: SidebarInboxReason) => {
     switch (reason) {
       case "approval":
@@ -34,6 +46,8 @@ export function SidebarInbox(props: {
         return gt("Failed", { $context: "thread status in the sidebar inbox" });
       case "limited":
         return gt("Hit a usage limit");
+      case "done":
+        return gt("Finished", { $context: "unread finished thread in the sidebar inbox" });
     }
   };
   const nowMs = Date.parse(nowMinute);
@@ -44,11 +58,20 @@ export function SidebarInbox(props: {
         expanded={expanded}
         onClick={() => setExpanded(!expanded)}
         tone="accent"
-        accessory={<span className="font-normal tabular-nums">{items.length}</span>}
+        accessory={
+          items.length > 0 ? (
+            <span className="font-normal tabular-nums">{items.length}</span>
+          ) : undefined
+        }
       >
         {gt("Inbox", { $context: "sidebar section of threads that need the user" })}
       </CollapsibleSectionHeader>
-      {expanded ? (
+      {expanded && items.length === 0 ? (
+        <p className="px-2 py-1 text-xs text-sidebar-muted-foreground">
+          {gt("You're all caught up")}
+        </p>
+      ) : null}
+      {expanded && items.length > 0 ? (
         <ul className="flex flex-col gap-px">
           {items.map(({ thread, reason, since }) => {
             const project = props.projectName(thread);
@@ -66,7 +89,9 @@ export function SidebarInbox(props: {
                       className={
                         reason === "failed" || reason === "limited"
                           ? "shrink-0 font-medium text-destructive"
-                          : "shrink-0 font-medium text-primary"
+                          : reason === "done"
+                            ? "shrink-0 font-medium text-success"
+                            : "shrink-0 font-medium text-primary"
                       }
                     >
                       {reasonLabel(reason)}

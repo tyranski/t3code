@@ -60,11 +60,12 @@ and worktree while you stay in the new thread composer. This requires a Git proj
 
 ## Inbox
 
-On web and desktop, the **Inbox** at the top of the sidebar lists every thread that waits on you,
+On web and desktop, the **Inbox** at the top of the sidebar lists every thread that needs you,
 across all projects and machines, newest first: approvals, questions, guest requests, failed runs,
-and usage limits. Each row shows why it is there, the project, and how long ago. Click a row to open
-the thread; it leaves the inbox once you answer, approve, or open a failed run. Settled threads stay
-out of it. The inbox hides when nothing waits on you, and its header collapses it.
+usage limits, and finished runs you have not opened yet. Each row shows why it is there, the
+project, and how long ago. Click a row to open the thread; it leaves the inbox once you open a
+finished or failed run, or answer and approve what it asks. Settled threads stay out of it. Your
+projects and threads stay below it, and its header collapses it.
 
 ## Pin and reorder threads
 
