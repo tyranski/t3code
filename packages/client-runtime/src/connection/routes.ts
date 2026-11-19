@@ -494,5 +494,9 @@ export function removedWithRelay(entry: ConnectionCatalogEntry): boolean {
 }
 
 export function sshTargetKey(target: DesktopSshEnvironmentTarget): string {
-  return JSON.stringify([target.alias, target.hostname, target.username, target.port]);
+  const parts = [target.alias, target.hostname, target.username, target.port];
+  // Appended only when set, so saved connections keep their keys.
+  return JSON.stringify(
+    target.sshConfigPath === undefined ? parts : [...parts, target.sshConfigPath],
+  );
 }

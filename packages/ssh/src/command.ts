@@ -71,7 +71,9 @@ export function parseSshResolveOutput(alias: string, stdout: string): DesktopSsh
 }
 
 export function targetConnectionKey(target: DesktopSshEnvironmentTarget): string {
-  return `${target.alias}\u0000${target.hostname}\u0000${target.username ?? ""}\u0000${target.port ?? ""}`;
+  const key = `${target.alias}\u0000${target.hostname}\u0000${target.username ?? ""}\u0000${target.port ?? ""}`;
+  // Appended only when set, so existing targets keep their remote state keys.
+  return target.sshConfigPath === undefined ? key : `${key}\u0000${target.sshConfigPath}`;
 }
 
 export const remoteStateKey = Effect.fn("ssh/command.remoteStateKey")(function* (
@@ -109,6 +111,7 @@ export function baseSshArgs(
   input?: { readonly batchMode?: "yes" | "no" },
 ): string[] {
   return [
+    ...(target.sshConfigPath !== undefined ? ["-F", target.sshConfigPath] : []),
     "-o",
     `BatchMode=${input?.batchMode ?? "no"}`,
     "-o",
@@ -406,6 +409,7 @@ export const runSshCommand = Effect.fn("ssh/command.runSshCommand")(function* (
 
 export const resolveSshTarget = Effect.fn("ssh/command.resolveSshTarget")(function* (
   alias: string,
+  sshConfigPath?: string,
 ): Effect.fn.Return<
   DesktopSshEnvironmentTarget,
   SshCommandError | SshInvalidTargetError,
@@ -423,10 +427,14 @@ export const resolveSshTarget = Effect.fn("ssh/command.resolveSshTarget")(functi
       hostname: trimmedAlias,
       username: null,
       port: null,
+      ...(sshConfigPath === undefined ? {} : { sshConfigPath }),
     },
     { preHostArgs: ["-G"] },
   ).pipe(
-    Effect.map((result) => parseSshResolveOutput(trimmedAlias, result.stdout)),
+    Effect.map((result) => ({
+      ...parseSshResolveOutput(trimmedAlias, result.stdout),
+      ...(sshConfigPath === undefined ? {} : { sshConfigPath }),
+    })),
     Effect.tap((target) =>
       Effect.logDebug("ssh.target.resolve.succeeded", sshTargetLogFields(target)),
     ),
@@ -437,6 +445,7 @@ export const resolveSshTarget = Effect.fn("ssh/command.resolveSshTarget")(functi
           hostname: trimmedAlias,
           username: null,
           port: null,
+          ...(sshConfigPath === undefined ? {} : { sshConfigPath }),
         }),
       ),
     ),

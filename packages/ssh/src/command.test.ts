@@ -97,6 +97,17 @@ describe("ssh command", () => {
           "2222",
         ],
       );
+      // A T3-written config (a dev container's) replaces the user's ssh config.
+      assert.deepEqual(
+        baseSshArgs({
+          alias: "t3-devcontainer",
+          hostname: "t3-devcontainer",
+          username: "vscode",
+          port: null,
+          sshConfigPath: "/state/devcontainers/a.ssh_config",
+        }).slice(0, 2),
+        ["-F", "/state/devcontainers/a.ssh_config"],
+      );
     }),
   );
 

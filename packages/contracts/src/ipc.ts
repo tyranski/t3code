@@ -399,8 +399,17 @@ export const DesktopSshEnvironmentTargetSchema = Schema.Struct({
   hostname: Schema.String,
   username: Schema.NullOr(Schema.String),
   port: Schema.NullOr(Schema.Number),
+  /** An ssh config file T3 wrote for this target, passed as `ssh -F`, such as a dev container's. */
+  sshConfigPath: Schema.optionalKey(Schema.String),
 });
 export type DesktopSshEnvironmentTarget = typeof DesktopSshEnvironmentTargetSchema.Type;
+
+export const DesktopDevContainerConnectionSchema = Schema.Struct({
+  target: DesktopSshEnvironmentTargetSchema,
+  /** The project folder's path inside the container. */
+  remoteWorkspaceFolder: Schema.String,
+});
+export type DesktopDevContainerConnection = typeof DesktopDevContainerConnectionSchema.Type;
 
 export type DesktopSshHostSource = "ssh-config" | "known-hosts";
 export const DesktopSshHostSourceSchema = Schema.Literals(["ssh-config", "known-hosts"]);
@@ -1095,6 +1104,8 @@ export interface DesktopBridge {
   setConnectionCatalog: (catalog: string) => Promise<boolean>;
   discoverSshHosts: () => Promise<readonly DesktopDiscoveredSshHost[]>;
   resolveSshHost: (alias: string) => Promise<DesktopSshEnvironmentTarget>;
+  /** Starts a local folder's dev container and returns an SSH target that reaches it. */
+  openDevContainer: (workspaceFolder: string) => Promise<DesktopDevContainerConnection>;
   requestSnapShotPermissions: (includeAccessibility: boolean) => Promise<void>;
   getSnapShotState: () => Promise<DesktopSnapShotState>;
   setupSnapShot: (action: DesktopSnapShotSetupAction) => Promise<void>;

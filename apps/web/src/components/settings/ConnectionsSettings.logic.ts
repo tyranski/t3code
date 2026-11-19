@@ -309,10 +309,13 @@ export function formatDesktopSshConnectionError(
   const rawMessage =
     error instanceof Error ? (thrownErrorMessage(error, m) ?? error.message) : fallback;
   const withoutIpcPrefix = rawMessage.replace(
-    /^Error invoking remote method 'desktop:ensure-ssh-environment':\s*/u,
+    /^Error invoking remote method 'desktop:[a-z-]+':\s*/u,
     "",
   );
-  const withoutTaggedErrorPrefix = withoutIpcPrefix.replace(/^Ssh[A-Za-z]+Error:\s*/u, "");
+  const withoutTaggedErrorPrefix = withoutIpcPrefix.replace(
+    /^(?:Ssh[A-Za-z]+Error|DesktopDevContainerError):\s*/u,
+    "",
+  );
   return withoutTaggedErrorPrefix.trim() || fallback;
 }
 

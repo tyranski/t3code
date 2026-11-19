@@ -1,4 +1,5 @@
 import { startFileDrag } from "./methods/fileDrag.ts";
+import { openDevContainer } from "./methods/devContainer.ts";
 import * as Effect from "effect/Effect";
 
 import { receiveProviderAuthCallback, cancelProviderAuthCallback } from "./methods/providerAuth.ts";
@@ -132,6 +133,7 @@ export const installDesktopIpcHandlers = Effect.fn("desktop.ipc.installHandlers"
 
   yield* ipc.handle(discoverSshHosts);
   yield* ipc.handle(resolveSshHost);
+  yield* ipc.handle(openDevContainer);
   yield* ipc.handle(ensureSshEnvironment);
   yield* ipc.handle(disconnectSshEnvironment);
   yield* ipc.handle(fetchSshEnvironmentDescriptor);

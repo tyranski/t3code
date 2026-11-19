@@ -2021,7 +2021,10 @@ const makeSshEnvironmentManager = Effect.fn("ssh/tunnel.SshEnvironmentManager.ma
       ...sshTargetLogFields(target),
       issuePairingToken: requestOptions?.issuePairingToken === true,
     });
-    const baseResolved = yield* resolveSshTarget(target.alias || target.hostname);
+    const baseResolved = yield* resolveSshTarget(
+      target.alias || target.hostname,
+      target.sshConfigPath,
+    );
     const resolvedTarget: DesktopSshEnvironmentTarget = {
       ...baseResolved,
       ...(target.username !== null ? { username: target.username } : {}),
@@ -2079,7 +2082,10 @@ const makeSshEnvironmentManager = Effect.fn("ssh/tunnel.SshEnvironmentManager.ma
     target: DesktopSshEnvironmentTarget,
   ): Effect.fn.Return<void, SshEnvironmentEffectError, SshEnvironmentEffectContext> {
     yield* Effect.logInfo("ssh.environment.disconnect.start", sshTargetLogFields(target));
-    const baseResolved = yield* resolveSshTarget(target.alias || target.hostname);
+    const baseResolved = yield* resolveSshTarget(
+      target.alias || target.hostname,
+      target.sshConfigPath,
+    );
     const resolvedTarget: DesktopSshEnvironmentTarget = {
       ...baseResolved,
       ...(target.username !== null ? { username: target.username } : {}),

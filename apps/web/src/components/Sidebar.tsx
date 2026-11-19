@@ -140,6 +140,7 @@ import { useClientSettings } from "../hooks/useSettings";
 import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { SidebarInbox } from "./sidebar/SidebarInbox";
+import { useOpenInDevContainer } from "../hooks/useOpenInDevContainer";
 import { useNowMinute } from "../hooks/useNowMinute";
 import {
   useEnvironmentIdentities,
@@ -995,6 +996,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
   // Row callbacks capture only the handler; the rest of the context changes with the route.
   const { handleNewThread } = newThreadContext;
   const primaryEnvironmentId = usePrimaryEnvironmentId();
+  const devContainer = useOpenInDevContainer();
   const clearSelection = useThreadSelectionStore((s) => s.clearSelection);
   const setSelectionAnchor = useThreadSelectionStore((s) => s.setAnchor);
   const toggleThreadSelection = useThreadSelectionStore((s) => s.toggleThread);
@@ -1269,12 +1271,19 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     ) => {
       const api = readLocalApi();
       if (!api) return;
+      // The desktop starts containers with this machine's Docker, so only its own projects qualify.
+      const localProject = devContainer.available
+        ? group.memberProjects.find((member) => member.environmentId === primaryEnvironmentId)
+        : undefined;
       void (async () => {
         const clicked = await settlePromise(() =>
           api.contextMenu.show(
             [
               { id: "new-thread", label: gt("New thread") },
               { id: "copy-path", label: gt("Copy path") },
+              ...(localProject
+                ? [{ id: "open-dev-container", label: gt("Open in dev container") }]
+                : []),
               ...(canPinProject(group)
                 ? [
                     group.pinned
@@ -1295,6 +1304,9 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
             return;
           case "copy-path":
             copyPathToClipboard(group.workspaceRoot, { path: group.workspaceRoot });
+            return;
+          case "open-dev-container":
+            if (localProject) void devContainer.open(localProject.workspaceRoot);
             return;
           case "pin":
           case "unpin":

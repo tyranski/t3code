@@ -269,6 +269,27 @@ again on its next connect.
 For Antigravity's Google callback on a remote host, see
 [remote sign-in](./providers-antigravity.md#sign-in-from-a-remote-device).
 
+## Dev containers
+
+In the desktop app, right-click a project on this computer and choose **Open in dev
+container**. T3 Code starts the project's dev container, connects to it as an
+environment, and opens the project there in a new thread. Agents then run inside the
+container with its toolchain. Choose it again to restart a stopped container.
+
+You need Docker and the Dev Containers CLI (`npm install -g @devcontainers/cli`), and
+the project needs a `.devcontainer/devcontainer.json`. A container that VS Code
+already started is reused.
+
+T3 Code reaches the container through `docker exec`, so no port is published. If the
+container has no SSH server, T3 Code installs `openssh-server` in it, and it adds its
+own key to the container user's `authorized_keys`. Rebuilding the container removes
+both; opening it again adds them back.
+
+Agents in the container need their own provider logins. Sign in inside the container,
+or mount your login folders such as `~/.claude` and `~/.codex` through `mounts` in
+`devcontainer.json`. Remove the environment in **Settings → Environments** to
+disconnect; the container keeps running until you stop it.
+
 ## Browser on a remote environment
 
 Browser tabs belong to the environment, so you and your agents see the same
