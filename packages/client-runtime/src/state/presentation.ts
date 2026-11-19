@@ -19,7 +19,7 @@ import {
   type EnvironmentServerConfig,
 } from "../connection/presentation.ts";
 import { type EnvironmentCatalogState, enabledEnvironmentIds } from "./connections.ts";
-import { hasRelayRoute } from "../connection/routes.ts";
+import { hasRelayRoute, isDevContainerEntry } from "../connection/routes.ts";
 
 function mapsEqual<K, V>(left: ReadonlyMap<K, V>, right: ReadonlyMap<K, V>): boolean {
   if (left.size !== right.size) {
@@ -312,16 +312,21 @@ export function createEnvironmentSummaryAtoms(input: {
       : next;
   });
   const machineByIdAtom = Atom.make((get) => {
+    const entries = get(input.catalogValueAtom).entries;
     const next = new Map(
-      get(environmentIdsAtom).map(
-        (environmentId) =>
-          [
-            environmentId,
-            resolveEnvironmentMachineKind(
-              get(input.presentationAtom(environmentId))?.serverConfig ?? null,
-            ),
-          ] as const,
-      ),
+      get(environmentIdsAtom).map((environmentId) => {
+        const entry = entries.get(environmentId);
+        // The container's server reports the host's hardware, so its icon would match the host.
+        if (entry !== undefined && isDevContainerEntry(entry)) {
+          return [environmentId, "container" as const] as const;
+        }
+        return [
+          environmentId,
+          resolveEnvironmentMachineKind(
+            get(input.presentationAtom(environmentId))?.serverConfig ?? null,
+          ),
+        ] as const;
+      }),
     );
     const previous = Option.getOrNull(
       get.self<ReadonlyMap<EnvironmentId, EnvironmentMachineKind>>(),

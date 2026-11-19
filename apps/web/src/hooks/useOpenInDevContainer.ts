@@ -7,7 +7,7 @@ import { formatDesktopSshConnectionError } from "../components/settings/Connecti
 import { toastManager } from "../components/ui/toast";
 import { connectSshEnvironment as connectSshEnvironmentAtom } from "../connection/onboarding";
 import { newProjectId } from "../lib/utils";
-import { waitForProject } from "../state/entities";
+import { waitForProject, waitForProjectAtPath } from "../state/entities";
 import { waitForEnvironmentConnected } from "../state/environments";
 import { projectEnvironment } from "../state/projects";
 import { useAtomCommand } from "../state/use-atom-command";
@@ -72,20 +72,19 @@ export function useOpenInDevContainer() {
           defaultModelSelection: null,
         },
       });
+      let projectRef = scopeProjectRef(environmentId, projectId);
       if (created._tag === "Failure") {
-        // Reopening finds the project already there, which is the point.
         const message = formatDesktopSshConnectionError(squashAtomCommandFailure(created));
-        if (message.includes("already exists")) {
-          toastManager.add({
-            type: "success",
-            title: gt("{project} is running in its dev container", { project: title }),
-          });
+        // Opened before: start the new thread in the project already there.
+        const existing = message.includes("already exists")
+          ? await waitForProjectAtPath(environmentId, connection.remoteWorkspaceFolder)
+          : null;
+        if (existing === null) {
+          fail(message);
           return;
         }
-        fail(message);
-        return;
+        projectRef = scopeProjectRef(environmentId, existing.id);
       }
-      const projectRef = scopeProjectRef(environmentId, projectId);
       await waitForProject(projectRef);
       await openThread(projectRef);
     };

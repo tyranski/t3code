@@ -274,7 +274,13 @@ For Antigravity's Google callback on a remote host, see
 In the desktop app, open a project's settings on this computer and choose **Open in dev
 container**. In folder view, the project folder's right-click menu has it too. T3 Code starts the project's dev container, connects to it as an
 environment, and opens the project there in a new thread. Agents then run inside the
-container with its toolchain. Choose it again to restart a stopped container.
+container with its toolchain. Choose it again to restart a stopped container or start
+another thread there.
+
+Threads in a dev container show a **Dev container** badge next to the project name at
+the top of the thread, and a container icon in the sidebar. Click the project name to
+start the next thread in the same container. For a new thread, pick the container in
+**Run on** below the composer.
 
 You need Docker and the Dev Containers CLI (`npm install -g @devcontainers/cli`), and
 the project needs a `.devcontainer/devcontainer.json`. A container that VS Code

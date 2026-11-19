@@ -1955,6 +1955,7 @@
   "a5bfe044d751bffe": "Ordinateur portable",
   "d91537cb9c815d62": "Mini PC",
   "102025507f853a25": "Station de travail",
+  "c38c5b00fe14d116": "Conteneur de développement",
   "3826acf499042b3b": "Récupération des dernières modifications...",
   "4d104843b652df2c": "Lancement de l’action de gestion de versions...",
   "a5c3147accb79692": "Créer une {term, select, mr {MR} cr {demande de modification} other {PR}}",
@@ -2739,7 +2740,6 @@
   "f3d4a4f5529a6a59": "Le premier démarrage construit l'image et peut prendre plusieurs minutes.",
   "bc5ec7051516804e": "{project} (conteneur de développement)",
   "ce041329adcf41a7": "Le serveur T3 du conteneur de développement ne s'est pas connecté. Réessayez.",
-  "95b346db89eacb0f": "{project} tourne dans son conteneur de développement",
   "ee8d5e90fd58f838": "T3 Code n’a pas pu ajouter le projet.",
   "138dd2315e3b4853": "Connectez l’environnement sélectionné et réessayez.",
   "dc8fdfd5ac8c8080": "Connectez {environment} et réessayez.",
@@ -3210,6 +3210,12 @@
   "890c34762a621a66": "Ouvrir le fil parent : {title}",
   "7514746d2bd43a1c": "Titre du fil",
   "ab42a6d2ab6073d9": "Actions du fil {title}",
+  "0c0f9117b206ced7": "Conteneur de développement",
+  "0adbceb141594026": [
+    "Nouveau fil dans ",
+    { "i": 1, "k": "_gt_value_1", "v": "v" },
+    ", dans son conteneur de développement"
+  ],
   "cd8fd5a47060164b": [
     "Nouveau fil dans ",
     {
@@ -8819,7 +8825,6 @@
   "241533719962794f": "Masque le projet dans les sélecteurs de projet. Les fils et les fichiers sont conservés.",
   "8512c768b3e556e5": "Échec de l’archivage du projet",
   "51430e79218f9804": "Archiver",
-  "c38c5b00fe14d116": "Conteneur de développement",
   "2af04d5a043d7853": "Démarre le conteneur de développement de ce projet et y ouvre le projet dans un nouveau fil.",
   "a879dc036a64a4f8": "Zone dangereuse",
   "7b735cd5f74aeeec": "Supprimer le checkout",

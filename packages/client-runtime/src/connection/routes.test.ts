@@ -4,11 +4,12 @@ import * as Option from "effect/Option";
 
 import {
   BearerConnectionProfile,
+  SshConnectionProfile,
   type ConnectionCatalogEntry,
   type ConnectionRoute,
 } from "./catalog.ts";
 import { pullRequestRoutingConnectionKey } from "./pullRequestRoutingPermissions.ts";
-import { BearerConnectionTarget, RelayConnectionTarget } from "./model.ts";
+import { BearerConnectionTarget, RelayConnectionTarget, SshConnectionTarget } from "./model.ts";
 import {
   connectionRouteId,
   connectionRouteKind,
@@ -16,6 +17,7 @@ import {
   credentialConnectionId,
   insertRoute,
   entryWithRoutes,
+  isDevContainerEntry,
   isNearbyAddress,
   mergeLearnedRoutes,
   pendingRouteOrder,
@@ -66,6 +68,34 @@ function learned(id: string, httpBaseUrl: string): ConnectionRoute {
 }
 
 describe("connection routes", () => {
+  it("recognizes a dev container by the ssh config on its SSH route", () => {
+    const sshEntry = (sshConfigPath?: string): ConnectionCatalogEntry => ({
+      target: new SshConnectionTarget({
+        environmentId: ENVIRONMENT_ID,
+        label: "App (dev container)",
+        connectionId: "ssh",
+      }),
+      profile: Option.some(
+        new SshConnectionProfile({
+          connectionId: "ssh",
+          environmentId: ENVIRONMENT_ID,
+          label: "App (dev container)",
+          target: {
+            alias: "t3-devcontainer-app-1234abcd",
+            hostname: "t3-devcontainer-app-1234abcd",
+            username: "vscode",
+            port: null,
+            ...(sshConfigPath === undefined ? {} : { sshConfigPath }),
+          },
+        }),
+      ),
+      enabled: true,
+    });
+    expect(isDevContainerEntry(sshEntry("/state/devcontainers/app.ssh_config"))).toBe(true);
+    expect(isDevContainerEntry(sshEntry())).toBe(false);
+    expect(isDevContainerEntry({ ...LAN, enabled: true })).toBe(false);
+  });
+
   it("classifies direct routes by address", () => {
     expect(connectionRouteKind(LAN)).toBe("lan");
     // Tailscale, Cloudflare WARP and Mesh, and other VPNs share 100.64.0.0/10.

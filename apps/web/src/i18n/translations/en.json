@@ -1955,6 +1955,7 @@
   "a5bfe044d751bffe": "Laptop",
   "d91537cb9c815d62": "Mini PC",
   "102025507f853a25": "Workstation",
+  "c38c5b00fe14d116": "Dev container",
   "3826acf499042b3b": "Pulling latest changes...",
   "4d104843b652df2c": "Starting source control action...",
   "a5c3147accb79692": "Create {term, select, mr {MR} cr {change request} other {PR}}",
@@ -2739,7 +2740,6 @@
   "f3d4a4f5529a6a59": "The first start builds the image and can take several minutes.",
   "bc5ec7051516804e": "{project} (dev container)",
   "ce041329adcf41a7": "The T3 server in the dev container did not connect. Try again.",
-  "95b346db89eacb0f": "{project} is running in its dev container",
   "ee8d5e90fd58f838": "T3 Code could not add the project.",
   "138dd2315e3b4853": "Connect the selected environment and try again.",
   "dc8fdfd5ac8c8080": "Connect {environment} and try again.",
@@ -3210,6 +3210,16 @@
   "890c34762a621a66": "Open parent thread: {title}",
   "7514746d2bd43a1c": "Thread title",
   "ab42a6d2ab6073d9": "Thread actions for {title}",
+  "0c0f9117b206ced7": "Dev container",
+  "0adbceb141594026": [
+    "New thread in ",
+    {
+      "i": 1,
+      "k": "_gt_value_1",
+      "v": "v"
+    },
+    ", in its dev container"
+  ],
   "cd8fd5a47060164b": [
     "New thread in ",
     {
@@ -8827,7 +8837,6 @@
   "241533719962794f": "Hides the project from project pickers. Threads and files are kept.",
   "8512c768b3e556e5": "Failed to archive project",
   "51430e79218f9804": "Archive",
-  "c38c5b00fe14d116": "Dev container",
   "2af04d5a043d7853": "Starts this project's dev container and opens the project there in a new thread.",
   "a879dc036a64a4f8": "Danger",
   "7b735cd5f74aeeec": "Remove checkout",

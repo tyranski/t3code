@@ -1955,6 +1955,7 @@
   "a5bfe044d751bffe": "Bärbar dator",
   "d91537cb9c815d62": "Mini-PC",
   "102025507f853a25": "Arbetsstation",
+  "c38c5b00fe14d116": "Utvecklingscontainer",
   "3826acf499042b3b": "Pullar de senaste ändringarna...",
   "4d104843b652df2c": "Startar versionshanteringsåtgärd...",
   "a5c3147accb79692": "Skapa {term, select, mr {MR} cr {ändringsbegäran} other {PR}}",
@@ -2739,7 +2740,6 @@
   "f3d4a4f5529a6a59": "Första starten bygger avbildningen och kan ta flera minuter.",
   "bc5ec7051516804e": "{project} (utvecklingscontainer)",
   "ce041329adcf41a7": "T3-servern i utvecklingscontainern anslöt inte. Försök igen.",
-  "95b346db89eacb0f": "{project} körs i sin utvecklingscontainer",
   "ee8d5e90fd58f838": "T3 Code kunde inte lägga till projektet.",
   "138dd2315e3b4853": "Anslut den valda miljön och försök igen.",
   "dc8fdfd5ac8c8080": "Anslut {environment} och försök igen.",
@@ -3210,6 +3210,12 @@
   "890c34762a621a66": "Öppna överordnad tråd: {title}",
   "7514746d2bd43a1c": "Trådtitel",
   "ab42a6d2ab6073d9": "Trådåtgärder för {title}",
+  "0c0f9117b206ced7": "Utvecklingscontainer",
+  "0adbceb141594026": [
+    "Ny tråd i ",
+    { "i": 1, "k": "_gt_value_1", "v": "v" },
+    ", i dess utvecklingscontainer"
+  ],
   "cd8fd5a47060164b": [
     "Ny tråd i ",
     {
@@ -8825,7 +8831,6 @@
   "241533719962794f": "Döljer projektet i projektväljare. Trådar och filer behålls.",
   "8512c768b3e556e5": "Kunde inte arkivera projektet",
   "51430e79218f9804": "Arkivera",
-  "c38c5b00fe14d116": "Utvecklingscontainer",
   "2af04d5a043d7853": "Startar projektets utvecklingscontainer och öppnar projektet där i en ny tråd.",
   "a879dc036a64a4f8": "Fara",
   "7b735cd5f74aeeec": "Ta bort utcheckning",

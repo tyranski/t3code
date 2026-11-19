@@ -1954,6 +1954,7 @@
   "a5bfe044d751bffe": "Laptop",
   "d91537cb9c815d62": "Mini-PC",
   "102025507f853a25": "Workstation",
+  "c38c5b00fe14d116": "Dev-Container",
   "3826acf499042b3b": "Neueste Änderungen werden gepullt...",
   "4d104843b652df2c": "Versionskontrollaktion wird gestartet...",
   "a5c3147accb79692": "{term, select, mr {MR erstellen} cr {Änderungsanfrage erstellen} other {PR erstellen}}",
@@ -2740,7 +2741,6 @@
   "f3d4a4f5529a6a59": "Beim ersten Start wird das Image gebaut, das kann einige Minuten dauern.",
   "bc5ec7051516804e": "{project} (Dev-Container)",
   "ce041329adcf41a7": "Der T3-Server im Dev-Container hat sich nicht verbunden. Versuche es erneut.",
-  "95b346db89eacb0f": "{project} läuft im Dev-Container",
   "ee8d5e90fd58f838": "T3 Code konnte das Projekt nicht hinzufügen.",
   "138dd2315e3b4853": "Verbinde die ausgewählte Umgebung und versuche es erneut.",
   "dc8fdfd5ac8c8080": "Verbinde {environment} und versuche es erneut.",
@@ -3211,6 +3211,12 @@
   "890c34762a621a66": "Übergeordneten Thread öffnen: {title}",
   "7514746d2bd43a1c": "Thread-Titel",
   "ab42a6d2ab6073d9": "Thread-Aktionen für {title}",
+  "0c0f9117b206ced7": "Dev-Container",
+  "0adbceb141594026": [
+    "Neuer Thread in ",
+    { "i": 1, "k": "_gt_value_1", "v": "v" },
+    ", in seinem Dev-Container"
+  ],
   "cd8fd5a47060164b": [
     "Neuer Thread in ",
     {
@@ -8819,7 +8825,6 @@
   "241533719962794f": "Blendet das Projekt in der Projektauswahl aus. Threads und Dateien bleiben erhalten.",
   "8512c768b3e556e5": "Projekt konnte nicht archiviert werden",
   "51430e79218f9804": "Archivieren",
-  "c38c5b00fe14d116": "Dev-Container",
   "2af04d5a043d7853": "Startet den Dev-Container dieses Projekts und öffnet das Projekt dort in einem neuen Thread.",
   "a879dc036a64a4f8": "Gefahrenzone",
   "7b735cd5f74aeeec": "Checkout entfernen",

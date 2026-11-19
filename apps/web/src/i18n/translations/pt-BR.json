@@ -1955,6 +1955,7 @@
   "a5bfe044d751bffe": "Notebook",
   "d91537cb9c815d62": "Mini PC",
   "102025507f853a25": "Estação de trabalho",
+  "c38c5b00fe14d116": "Contêiner de desenvolvimento",
   "3826acf499042b3b": "Fazendo pull das alterações mais recentes...",
   "4d104843b652df2c": "Iniciando ação de controle de versão...",
   "a5c3147accb79692": "Criar {term, select, mr {MR} cr {solicitação de alteração} other {PR}}",
@@ -2739,7 +2740,6 @@
   "f3d4a4f5529a6a59": "A primeira inicialização cria a imagem e pode levar alguns minutos.",
   "bc5ec7051516804e": "{project} (contêiner de desenvolvimento)",
   "ce041329adcf41a7": "O servidor do T3 no contêiner de desenvolvimento não se conectou. Tente novamente.",
-  "95b346db89eacb0f": "{project} está rodando no contêiner de desenvolvimento",
   "ee8d5e90fd58f838": "O T3 Code não conseguiu adicionar o projeto.",
   "138dd2315e3b4853": "Conecte o ambiente selecionado e tente novamente.",
   "dc8fdfd5ac8c8080": "Conecte {environment} e tente novamente.",
@@ -3210,6 +3210,12 @@
   "890c34762a621a66": "Abrir a thread principal: {title}",
   "7514746d2bd43a1c": "Título da thread",
   "ab42a6d2ab6073d9": "Ações da thread {title}",
+  "0c0f9117b206ced7": "Contêiner de desenvolvimento",
+  "0adbceb141594026": [
+    "Nova thread em ",
+    { "i": 1, "k": "_gt_value_1", "v": "v" },
+    ", no contêiner de desenvolvimento"
+  ],
   "cd8fd5a47060164b": [
     "Nova thread em ",
     {
@@ -8818,7 +8824,6 @@
   "241533719962794f": "Oculta o projeto nos seletores de projeto. As threads e os arquivos são mantidos.",
   "8512c768b3e556e5": "Falha ao arquivar o projeto",
   "51430e79218f9804": "Arquivar",
-  "c38c5b00fe14d116": "Contêiner de desenvolvimento",
   "2af04d5a043d7853": "Inicia o contêiner de desenvolvimento deste projeto e abre o projeto nele em uma nova conversa.",
   "a879dc036a64a4f8": "Zona de perigo",
   "7b735cd5f74aeeec": "Remover checkout",

@@ -241,6 +241,14 @@ export function connectionRouteAddress(route: ConnectionRoute): string | null {
 export const hasSavedBearerRoute = (entry: ConnectionCatalogEntry) =>
   connectionRoutes(entry).some((r) => !isLearned(r) && r.target._tag === "BearerConnectionTarget");
 
+/** A dev container's SSH route carries the ssh config T3 wrote for it. */
+export function isDevContainerEntry(entry: ConnectionCatalogEntry): boolean {
+  return connectionRoutes(entry).some((route) => {
+    const profile = Option.getOrNull(route.profile);
+    return profile?._tag === "SshConnectionProfile" && profile.target.sshConfigPath !== undefined;
+  });
+}
+
 export function hasRelayRoute(
   entry: Pick<ConnectionCatalogEntry, "target" | "alternateRoutes">,
 ): boolean {

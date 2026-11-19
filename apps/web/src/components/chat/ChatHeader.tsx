@@ -11,7 +11,8 @@ import {
   squashAtomCommandFailure,
 } from "@t3tools/client-runtime/state/runtime";
 import { T, useGT, Var } from "gt-react";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, ContainerIcon } from "lucide-react";
+import { useEnvironmentMachines } from "../../state/environments";
 import {
   memo,
   useEffect,
@@ -86,6 +87,7 @@ export const ChatHeader = memo(function ChatHeader({
 }: ChatHeaderProps) {
   const gt = useGT();
   const activeProjectName = activeProject?.isScratch ? gt("No project") : activeProject?.title;
+  const inDevContainer = useEnvironmentMachines().get(activeThreadEnvironmentId) === "container";
   const activeProjectCwd = activeProject?.workspaceRoot ?? null;
   const interfaceFont = useClientSettings((settings) => settings.fontFamilySans);
   const breadcrumbContainerRef = useRef<HTMLDivElement>(null);
@@ -282,11 +284,23 @@ export const ChatHeader = memo(function ChatHeader({
                     showTitle={false}
                     variant="cap-aligned"
                   />
+                  {inDevContainer ? (
+                    <Badge variant="info" size="sm">
+                      <ContainerIcon aria-hidden />
+                      <T>Dev container</T>
+                    </Badge>
+                  ) : null}
                 </TooltipTrigger>
                 <TooltipPopup side="top">
-                  <T>
-                    New thread in <Var>{activeProjectName}</Var>
-                  </T>
+                  {inDevContainer ? (
+                    <T>
+                      New thread in <Var>{activeProjectName}</Var>, in its dev container
+                    </T>
+                  ) : (
+                    <T>
+                      New thread in <Var>{activeProjectName}</Var>
+                    </T>
+                  )}
                 </TooltipPopup>
               </Tooltip>
             </WorkspaceBreadcrumbItem>

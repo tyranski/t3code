@@ -19,6 +19,7 @@ import {
   parseThreadKey,
   threadKey,
 } from "@t3tools/client-runtime/state/entities";
+import { findProjectByPath } from "@t3tools/client-runtime/state/projects";
 import type { ScopedProjectRef, ScopedThreadRef } from "@t3tools/contracts";
 import type {
   EnvironmentId,
@@ -294,6 +295,26 @@ export function subscribeProject(
 
 export function readProjects(): ReadonlyArray<EnvironmentProject> {
   return appAtomRegistry.get(environmentProjects.projectsAtom);
+}
+
+/** The environment's project at this folder once its projects load, or null after the timeout. */
+export async function waitForProjectAtPath(
+  environmentId: EnvironmentId,
+  workspaceRoot: string,
+  timeoutMs = 10_000,
+): Promise<EnvironmentProject | null> {
+  const find = (projects: ReadonlyArray<EnvironmentProject>) =>
+    findProjectByPath(
+      projects.filter((project) => project.environmentId === environmentId),
+      workspaceRoot,
+    ) ?? null;
+  await waitForAtomValue({
+    registry: appAtomRegistry,
+    atom: environmentProjects.projectsAtom,
+    predicate: (projects) => find(projects) !== null,
+    timeoutMs,
+  });
+  return find(readProjects());
 }
 
 export function waitForProject(
