@@ -16,6 +16,7 @@ import {
   useEnvironmentPresentation,
 } from "./presentation";
 import { primaryEnvironmentIdAtom } from "./primaryEnvironment";
+import { waitForAtomValue } from "./waitForAtomValue";
 import { relayEnvironmentDiscovery } from "./relay";
 import { usePreparedConnection } from "./session";
 
@@ -81,6 +82,22 @@ export function readEnvironment(environmentId: EnvironmentId): EnvironmentPresen
     .get(environmentPresentations.presentationsAtom)
     .get(environmentId);
   return presentation ? projectEnvironmentPresentation(environmentId, presentation) : null;
+}
+
+/** Resolves true once the environment connects, or false after the timeout. */
+export function waitForEnvironmentConnected(environmentId: EnvironmentId, timeoutMs = 60_000) {
+  return waitForAtomValue({
+    registry: appAtomRegistry,
+    atom: environmentPresentations.presentationsAtom,
+    predicate: (presentations) => {
+      const presentation = presentations.get(environmentId);
+      return (
+        presentation !== undefined &&
+        projectEnvironmentPresentation(environmentId, presentation).connection.phase === "connected"
+      );
+    },
+    timeoutMs,
+  });
 }
 
 export function useEnvironment(

@@ -2738,6 +2738,7 @@
   "0110114518099ef1": "Iniciando el contenedor de desarrollo de {project}…",
   "f3d4a4f5529a6a59": "El primer inicio construye la imagen y puede tardar varios minutos.",
   "bc5ec7051516804e": "{project} (contenedor de desarrollo)",
+  "ce041329adcf41a7": "El servidor de T3 en el contenedor de desarrollo no se conectó. Inténtalo de nuevo.",
   "95b346db89eacb0f": "{project} se está ejecutando en su contenedor de desarrollo",
   "ee8d5e90fd58f838": "T3 Code no pudo añadir el proyecto.",
   "138dd2315e3b4853": "Conecta el entorno seleccionado y vuelve a intentarlo.",

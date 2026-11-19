@@ -8,6 +8,7 @@ import { toastManager } from "../components/ui/toast";
 import { connectSshEnvironment as connectSshEnvironmentAtom } from "../connection/onboarding";
 import { newProjectId } from "../lib/utils";
 import { waitForProject } from "../state/entities";
+import { waitForEnvironmentConnected } from "../state/environments";
 import { projectEnvironment } from "../state/projects";
 import { useAtomCommand } from "../state/use-atom-command";
 import { useNewThreadHandler } from "./useHandleNewThread";
@@ -55,6 +56,11 @@ export function useOpenInDevContainer() {
         return;
       }
       const environmentId = connected.value;
+      // Registering returns before the socket is up, and commands sent earlier fail.
+      if (!(await waitForEnvironmentConnected(environmentId))) {
+        fail(gt("The T3 server in the dev container did not connect. Try again."));
+        return;
+      }
       const projectId = newProjectId();
       const created = await createProject({
         environmentId,

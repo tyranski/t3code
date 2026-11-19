@@ -2739,6 +2739,7 @@
   "0110114518099ef1": "Dev-Container für {project} wird gestartet…",
   "f3d4a4f5529a6a59": "Beim ersten Start wird das Image gebaut, das kann einige Minuten dauern.",
   "bc5ec7051516804e": "{project} (Dev-Container)",
+  "ce041329adcf41a7": "Der T3-Server im Dev-Container hat sich nicht verbunden. Versuche es erneut.",
   "95b346db89eacb0f": "{project} läuft im Dev-Container",
   "ee8d5e90fd58f838": "T3 Code konnte das Projekt nicht hinzufügen.",
   "138dd2315e3b4853": "Verbinde die ausgewählte Umgebung und versuche es erneut.",

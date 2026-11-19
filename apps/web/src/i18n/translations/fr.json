@@ -2738,6 +2738,7 @@
   "0110114518099ef1": "Démarrage du conteneur de développement de {project}…",
   "f3d4a4f5529a6a59": "Le premier démarrage construit l'image et peut prendre plusieurs minutes.",
   "bc5ec7051516804e": "{project} (conteneur de développement)",
+  "ce041329adcf41a7": "Le serveur T3 du conteneur de développement ne s'est pas connecté. Réessayez.",
   "95b346db89eacb0f": "{project} tourne dans son conteneur de développement",
   "ee8d5e90fd58f838": "T3 Code n’a pas pu ajouter le projet.",
   "138dd2315e3b4853": "Connectez l’environnement sélectionné et réessayez.",

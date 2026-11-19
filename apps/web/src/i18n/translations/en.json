@@ -2738,6 +2738,7 @@
   "0110114518099ef1": "Starting the {project} dev container…",
   "f3d4a4f5529a6a59": "The first start builds the image and can take several minutes.",
   "bc5ec7051516804e": "{project} (dev container)",
+  "ce041329adcf41a7": "The T3 server in the dev container did not connect. Try again.",
   "95b346db89eacb0f": "{project} is running in its dev container",
   "ee8d5e90fd58f838": "T3 Code could not add the project.",
   "138dd2315e3b4853": "Connect the selected environment and try again.",
