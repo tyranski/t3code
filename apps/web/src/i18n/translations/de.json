@@ -8818,6 +8818,8 @@
   "241533719962794f": "Blendet das Projekt in der Projektauswahl aus. Threads und Dateien bleiben erhalten.",
   "8512c768b3e556e5": "Projekt konnte nicht archiviert werden",
   "51430e79218f9804": "Archivieren",
+  "c38c5b00fe14d116": "Dev-Container",
+  "2af04d5a043d7853": "Startet den Dev-Container dieses Projekts und öffnet das Projekt dort in einem neuen Thread.",
   "a879dc036a64a4f8": "Gefahrenzone",
   "7b735cd5f74aeeec": "Checkout entfernen",
   "e86a979f29855bc9": "Dieses Projekt überall entfernen",

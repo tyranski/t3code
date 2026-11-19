@@ -8826,6 +8826,8 @@
   "241533719962794f": "Hides the project from project pickers. Threads and files are kept.",
   "8512c768b3e556e5": "Failed to archive project",
   "51430e79218f9804": "Archive",
+  "c38c5b00fe14d116": "Dev container",
+  "2af04d5a043d7853": "Starts this project's dev container and opens the project there in a new thread.",
   "a879dc036a64a4f8": "Danger",
   "7b735cd5f74aeeec": "Remove checkout",
   "e86a979f29855bc9": "Remove this project everywhere",

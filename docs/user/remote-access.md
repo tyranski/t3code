@@ -271,8 +271,8 @@ For Antigravity's Google callback on a remote host, see
 
 ## Dev containers
 
-In the desktop app, right-click a project on this computer and choose **Open in dev
-container**. T3 Code starts the project's dev container, connects to it as an
+In the desktop app, open a project's settings on this computer and choose **Open in dev
+container**. In folder view, the project folder's right-click menu has it too. T3 Code starts the project's dev container, connects to it as an
 environment, and opens the project there in a new thread. Agents then run inside the
 container with its toolchain. Choose it again to restart a stopped container.
 

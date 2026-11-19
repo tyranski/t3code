@@ -8816,6 +8816,8 @@
   "241533719962794f": "Oculta el proyecto en los selectores de proyectos. Se conservan los hilos y archivos.",
   "8512c768b3e556e5": "No se pudo archivar el proyecto",
   "51430e79218f9804": "Archivar",
+  "c38c5b00fe14d116": "Contenedor de desarrollo",
+  "2af04d5a043d7853": "Inicia el contenedor de desarrollo de este proyecto y abre el proyecto allí en un hilo nuevo.",
   "a879dc036a64a4f8": "Peligro",
   "7b735cd5f74aeeec": "Quitar checkout",
   "e86a979f29855bc9": "Quitar este proyecto en todas partes",

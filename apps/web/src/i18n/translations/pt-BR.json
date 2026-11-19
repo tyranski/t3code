@@ -8817,6 +8817,8 @@
   "241533719962794f": "Oculta o projeto nos seletores de projeto. As threads e os arquivos são mantidos.",
   "8512c768b3e556e5": "Falha ao arquivar o projeto",
   "51430e79218f9804": "Arquivar",
+  "c38c5b00fe14d116": "Contêiner de desenvolvimento",
+  "2af04d5a043d7853": "Inicia o contêiner de desenvolvimento deste projeto e abre o projeto nele em uma nova conversa.",
   "a879dc036a64a4f8": "Zona de perigo",
   "7b735cd5f74aeeec": "Remover checkout",
   "e86a979f29855bc9": "Remover este projeto de todos os lugares",

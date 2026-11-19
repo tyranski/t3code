@@ -8818,6 +8818,8 @@
   "241533719962794f": "Masque le projet dans les sélecteurs de projet. Les fils et les fichiers sont conservés.",
   "8512c768b3e556e5": "Échec de l’archivage du projet",
   "51430e79218f9804": "Archiver",
+  "c38c5b00fe14d116": "Conteneur de développement",
+  "2af04d5a043d7853": "Démarre le conteneur de développement de ce projet et y ouvre le projet dans un nouveau fil.",
   "a879dc036a64a4f8": "Zone dangereuse",
   "7b735cd5f74aeeec": "Supprimer le checkout",
   "e86a979f29855bc9": "Supprimer ce projet partout",

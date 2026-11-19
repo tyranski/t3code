@@ -64,6 +64,7 @@ import {
 import { useSettingsProjectGroups } from "./useSettingsProjectGroups";
 import { readUnloadedThreadCount } from "../../state/olderSettledShelf";
 import { settingsScopeEnvironmentLabels } from "./settingsScopeAxis";
+import { useOpenInDevContainer } from "../../hooks/useOpenInDevContainer";
 
 const ProjectIconPickerDialog = lazy(() =>
   import("./ProjectIconPickerDialog").then((module) => ({
@@ -271,6 +272,11 @@ function ProjectDetail({
   const gt = useGT();
   const navigate = useNavigate({ from: "/settings" });
   const primaryEnvironmentId = usePrimaryEnvironmentId();
+  const devContainer = useOpenInDevContainer();
+  // The desktop starts containers with this machine's Docker, so only its own checkout qualifies.
+  const devContainerProject = devContainer.available
+    ? group.memberProjects.find((member) => member.environmentId === primaryEnvironmentId)
+    : undefined;
   const { environments } = useEnvironments();
   const environmentById = new Map(
     environments.map((environment) => [environment.environmentId, environment]),
@@ -688,6 +694,23 @@ function ProjectDetail({
                 }
               />
             </>
+          ) : null}
+          {devContainerProject ? (
+            <SettingsRow
+              title={gt("Dev container")}
+              description={gt(
+                "Starts this project's dev container and opens the project there in a new thread.",
+              )}
+              control={
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void devContainer.open(devContainerProject.workspaceRoot)}
+                >
+                  {gt("Open in dev container")}
+                </Button>
+              }
+            />
           ) : null}
         </SettingsSection>
         <ProjectDefaultsSettings category="project" />
