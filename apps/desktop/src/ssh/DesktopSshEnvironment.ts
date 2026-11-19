@@ -92,7 +92,8 @@ export const resolveDesktopSshCliRunner = (
   }
   const releaseBaseUrl = env[CLI_RELEASE_BASE_URL_ENV]?.trim() || undefined;
   return {
-    archiveVersion: environment.appVersion,
+    // Unpackaged, Electron reports its own version, which has no T3 release.
+    archiveVersion: environment.isPackaged ? environment.appVersion : serverPackageJson.version,
     ...(releaseBaseUrl === undefined ? {} : { releaseBaseUrl }),
   };
 };

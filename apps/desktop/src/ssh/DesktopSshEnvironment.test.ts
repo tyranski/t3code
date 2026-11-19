@@ -7,32 +7,34 @@ import * as Layer from "effect/Layer";
 
 import * as DesktopConfig from "../app/DesktopConfig.ts";
 import * as DesktopEnvironment from "../app/DesktopEnvironment.ts";
+import serverPackageJson from "../../../server/package.json" with { type: "json" };
 import { resolveDesktopSshCliRunner } from "./DesktopSshEnvironment.ts";
 
-const packagedEnvironment = DesktopEnvironment.DesktopEnvironment.pipe(
-  Effect.provide(
-    DesktopEnvironment.layer({
-      dirname: "/Applications/T3 Code.app/Contents/Resources/app.asar/dist-electron",
-      homeDirectory: "/Users/alice",
-      platform: "darwin",
-      processArch: "arm64",
-      appVersion: "0.0.22",
-      appPath: "/Applications/T3 Code.app/Contents/Resources/app.asar",
-      isPackaged: true,
-      resourcesPath: "/Applications/T3 Code.app/Contents/Resources",
-      runningUnderArm64Translation: false,
-    }).pipe(
-      Layer.provide(
-        Layer.mergeAll(NodeServices.layer, NodePath.layerPosix, DesktopConfig.layerTest({})),
+const makeEnvironment = (input: { readonly appVersion: string; readonly isPackaged: boolean }) =>
+  DesktopEnvironment.DesktopEnvironment.pipe(
+    Effect.provide(
+      DesktopEnvironment.layer({
+        dirname: "/Applications/T3 Code.app/Contents/Resources/app.asar/dist-electron",
+        homeDirectory: "/Users/alice",
+        platform: "darwin",
+        processArch: "arm64",
+        appVersion: input.appVersion,
+        appPath: "/Applications/T3 Code.app/Contents/Resources/app.asar",
+        isPackaged: input.isPackaged,
+        resourcesPath: "/Applications/T3 Code.app/Contents/Resources",
+        runningUnderArm64Translation: false,
+      }).pipe(
+        Layer.provide(
+          Layer.mergeAll(NodeServices.layer, NodePath.layerPosix, DesktopConfig.layerTest({})),
+        ),
       ),
     ),
-  ),
-);
+  );
 
 describe("resolveDesktopSshCliRunner", () => {
   it.effect("downloads the remote runner from the release mirror", () =>
     Effect.gen(function* () {
-      const environment = yield* packagedEnvironment;
+      const environment = yield* makeEnvironment({ appVersion: "0.0.22", isPackaged: true });
 
       const runner = resolveDesktopSshCliRunner(environment, {
         [CLI_RELEASE_BASE_URL_ENV]: "https://mirror.example.com/t3code",
@@ -42,6 +44,17 @@ describe("resolveDesktopSshCliRunner", () => {
         archiveVersion: "0.0.22",
         releaseBaseUrl: "https://mirror.example.com/t3code",
       });
+    }),
+  );
+
+  // An unpackaged Electron reports its own version, which has no T3 release.
+  it.effect("downloads the server package's release from a development build", () =>
+    Effect.gen(function* () {
+      const environment = yield* makeEnvironment({ appVersion: "44.10.1", isPackaged: false });
+
+      const runner = resolveDesktopSshCliRunner(environment, {});
+
+      assert.deepStrictEqual(runner, { archiveVersion: serverPackageJson.version });
     }),
   );
 });
