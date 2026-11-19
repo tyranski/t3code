@@ -3552,6 +3552,8 @@
   "36a43717ed18c17f": "Retoma as threads interrompidas após uma atualização ou reinicialização.",
   "d24e3cd7bcf08490": "Manter ativo enquanto os agentes trabalham",
   "ab4c7ddbe60d1ddc": "Impede que o computador entre em repouso enquanto os agentes trabalham. Fechar a tampa do notebook ainda o coloca em repouso.",
+  "087fad3ef1281e03": "Modo ausente",
+  "5eb61aeaf52d785f": "Os agentes continuam trabalhando no objetivo atual sem perguntar e recusam novo escopo.",
   "bb906952ffdf6ae4": "Os checkouts de projeto selecionados usam valores diferentes",
   "5cb964736f071766": "Os ambientes selecionados usam valores diferentes",
   "3c65f5fcf5915911": "Misto",

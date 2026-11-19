@@ -595,6 +595,23 @@ function ServerSettingsDetail(props: { readonly page: SettingsPage }) {
                       onValueChange={(value) => write({ keepAwakeWhileAgentsWork: value })}
                     />
                   </View>
+                  <View className="border-t border-border-subtle">
+                    <SettingsSwitchRow
+                      icon="airplane"
+                      label={gt("Away mode")}
+                      subtitle={managedSubtitle(
+                        "awayMode",
+                        projectSelected
+                          ? gt("Environment-wide setting. Select All projects to change it.")
+                          : gt(
+                              "Agents keep working toward the current goal without asking, and decline new scope.",
+                            ),
+                      )}
+                      value={uniform("awayMode")}
+                      disabled={disabledFor("awayMode")}
+                      onValueChange={(value) => write({ awayMode: value })}
+                    />
+                  </View>
                 </SettingsSection>
               </>
             ) : null}
