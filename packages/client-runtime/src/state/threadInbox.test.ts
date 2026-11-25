@@ -34,6 +34,20 @@ function thread(id: string, working: boolean) {
   };
 }
 
+describe("isThreadWorking", () => {
+  it("keeps a finished thread working while it left background work running", () => {
+    const running = thread("a", true);
+    const finished = { ...running, runtime: { ...running.runtime!, status: "completed" as const } };
+    const command = { taskId: "eval", kind: "command" as const };
+    const doneWatch = { taskId: "pull-request-watch:github.com/o/r#1", kind: "monitor" as const };
+    expect(isThreadWorking(finished)).toBe(false);
+    expect(isThreadWorking({ ...finished, pendingBackgroundTasks: [command] })).toBe(true);
+    expect(isThreadWorking({ ...finished, pendingBackgroundTasks: [doneWatch] })).toBe(false);
+    const failed = { ...finished, runtime: { ...finished.runtime, status: "failed" as const } };
+    expect(isThreadWorking({ ...failed, pendingBackgroundTasks: [command] })).toBe(false);
+  });
+});
+
 describe("createInboxReturnTracker", () => {
   beforeEach(() => {
     vi.useFakeTimers();

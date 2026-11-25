@@ -954,26 +954,34 @@ describe("navigation after parking a thread", () => {
 });
 
 describe("unseen completion with background work", () => {
+  // Completion still follows held work only; the list shows anything left running as Waiting.
   it.each([
     {
       roster: "dev server",
-      task: { kind: "command" },
+      task: { taskId: "background-work", kind: "command" },
       status: "ready",
-      receded: false,
-      pill: "Completed",
+      row: "waiting",
+      pill: "Waiting",
     },
     {
       roster: "dev server watchdog",
-      task: { kind: "monitor" },
+      task: { taskId: "background-work", kind: "monitor" },
       status: "ready",
-      receded: false,
+      row: "waiting",
+      pill: "Waiting",
+    },
+    {
+      roster: "finished pull request watch",
+      task: { taskId: "pull-request-watch:github.com/o/r#1", kind: "monitor" },
+      status: "ready",
+      row: "ready",
       pill: "Completed",
     },
     {
       roster: "awaited command",
-      task: { kind: "command", awaited: true },
+      task: { taskId: "background-work", kind: "command", awaited: true },
       status: "waiting",
-      receded: true,
+      row: "waiting",
       pill: "Waiting",
     },
   ] as const)("presents a completed thread with a $roster roster", (expected) => {
@@ -983,23 +991,24 @@ describe("unseen completion with background work", () => {
       status: "completed",
       latestRunCompletedAt: DateTime.makeUnsafe("2026-06-20T01:00:00.000Z"),
       lastVisitedAt: DateTime.makeUnsafe("2026-06-20T00:59:00.000Z"),
-      pendingBackgroundTasks: [{ taskId: "background-work", ...expected.task }],
+      pendingBackgroundTasks: [expected.task],
     });
-    const status = resolveSidebarThreadStatus(thread);
+    const row = resolveSidebarRowStatus(thread);
     const isUnread = hasUnseenCompletion(thread);
 
     expect(isUnread).toBe(true);
-    expect(status).toBe(expected.status);
+    expect(resolveSidebarThreadStatus(thread)).toBe(expected.status);
+    expect(row).toBe(expected.row);
     expect(
       shouldRecedeSidebarThread({
-        status,
+        status: row,
         isUnread,
         isWoke: false,
         isActive: false,
         isSelected: false,
       }),
-    ).toBe(expected.receded);
-    expect(isSidebarThreadWorking(thread)).toBe(expected.receded);
+    ).toBe(row === "waiting");
+    expect(isSidebarThreadWorking(thread)).toBe(row === "waiting");
     expect(resolveThreadStatusPill({ thread })).toMatchObject({ label: expected.pill });
   });
 });

@@ -20,6 +20,7 @@ import {
   threadSearchSubject,
 } from "@t3tools/client-runtime/state/thread-search";
 import { foldSearchQuery, rankSearchItems, scoreThreadSearch } from "@t3tools/shared/paletteSearch";
+import { backgroundWorkIsRunning } from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
 import {
   createInboxReturnTracker,
   isThreadWorking,
@@ -345,9 +346,14 @@ export function threadListV2RowAccessibilityLabel(
 /** Row status: a failure the user has already opened settles to ready, like Done. */
 export function resolveThreadListV2RowStatus(
   thread: Parameters<typeof resolveThreadListV2Status>[0] &
-    Pick<EnvironmentThreadShell, "latestRun" | "lastVisitedAt">,
+    Pick<EnvironmentThreadShell, "latestRun" | "lastVisitedAt"> & {
+      readonly pendingBackgroundTasks?: EnvironmentThreadShell["pendingBackgroundTasks"];
+    },
 ): ThreadListV2Status {
   const status = resolveThreadListV2Status(thread);
+  if (status === "ready" && backgroundWorkIsRunning(thread.pendingBackgroundTasks ?? [])) {
+    return "waiting";
+  }
   // A runtime failure without a failed run has nothing to date it, so it stays.
   if (status !== "failed" || thread.latestRun?.status !== "failed") return status;
   return hasUnseenRunFailure(thread) ? status : "ready";

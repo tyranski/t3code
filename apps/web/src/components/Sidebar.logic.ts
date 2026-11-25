@@ -2,7 +2,10 @@ import type { EnvironmentServerConfig } from "@t3tools/client-runtime/connection
 import { scopeThreadRef, scopedThreadKey } from "@t3tools/client-runtime/environment";
 import { resolveThreadWorkingStartedAt } from "@t3tools/client-runtime/state/models";
 import { isShownUnderParent } from "@t3tools/client-runtime/state/threads";
-import { backgroundWorkHoldsCompletion } from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
+import {
+  backgroundWorkHoldsCompletion,
+  backgroundWorkIsRunning,
+} from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
 import { threadPullRequestSearchTerms } from "@t3tools/shared/threadPullRequests";
 import * as React from "react";
 import { msg } from "gt-react";
@@ -962,6 +965,9 @@ export function resolveSidebarRowStatus(
   thread: ThreadStatusInput & SidebarThreadStatusInput,
 ): SidebarThreadStatus {
   const status = resolveSidebarThreadStatus(thread);
+  if (status === "ready" && backgroundWorkIsRunning(thread.pendingBackgroundTasks ?? [])) {
+    return "waiting";
+  }
   // A runtime failure without a failed run has nothing to date it, so it stays.
   if (status !== "failed" || thread.latestRun?.status !== "failed") return status;
   return hasUnseenRunFailure(thread) ? status : "ready";
@@ -1246,7 +1252,9 @@ export function resolveThreadStatusPill(input: {
 
   if (
     (thread.runtime?.status === "running" && thread.blockedOnThreadWait === true) ||
-    backgroundWorkHoldsCompletion(thread.pendingBackgroundTasks ?? [])
+    backgroundWorkHoldsCompletion(thread.pendingBackgroundTasks ?? []) ||
+    (thread.runtime?.status !== "failed" &&
+      backgroundWorkIsRunning(thread.pendingBackgroundTasks ?? []))
   ) {
     return {
       label: msg("Waiting"),
