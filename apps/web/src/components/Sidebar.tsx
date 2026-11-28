@@ -139,7 +139,8 @@ import { startNewThreadFromContext } from "../lib/chatThreadActions";
 import { useClientSettings } from "../hooks/useSettings";
 import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { SidebarInbox } from "./sidebar/SidebarInbox";
+import { SidebarInbox, SidebarInboxRow, type SidebarSideChat } from "./sidebar/SidebarInbox";
+import { useRightPanelStore } from "../rightPanelStore";
 import { useOpenInDevContainer } from "../hooks/useOpenInDevContainer";
 import { useNowMinute } from "../hooks/useNowMinute";
 import {
@@ -257,6 +258,8 @@ import {
   useComboboxFilter,
 } from "./ui/combobox";
 import { SidebarContent, SidebarGroup, useSidebar } from "./ui/sidebar";
+import { CollapsibleSectionHeader } from "./ui/collapsible-section-header";
+import { ScrollArea } from "./ui/scroll-area";
 import { SidebarChromeFooter, SidebarChromeHeader } from "./sidebar/SidebarChrome";
 import { SidebarHeaderIconButton, SidebarThreadHeader } from "./sidebar/SidebarThreadHeader";
 import { TooltipProvider } from "./ui/tooltip";
@@ -1844,6 +1847,10 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
           serverConfigs.has(thread.environmentId)
         );
       };
+      const originList =
+        event.target instanceof Element
+          ? event.target.closest("li[data-thread-item]")?.parentElement
+          : null;
       let targetKey: string | null = null;
       let sweptKeys: string[] = [];
       const sweepTo = (key: string | null) => {
@@ -1865,8 +1872,10 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
         },
         onPending: () => {},
         onStart: () => sweepTo(originKey),
-        onMove: ({ y }) =>
-          sweepTo(threadListRef.current && sidebarThreadKeyAtY(threadListRef.current, y)),
+        onMove: ({ y }) => {
+          const list = originList ?? threadListRef.current;
+          sweepTo(list && sidebarThreadKeyAtY(list, y));
+        },
         onEnd: () => {
           const keys = sweptKeys.filter(canApply);
           if (action === "settle") {
@@ -1986,10 +1995,6 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     const activeRows = rowsOf(activeThreads, "active");
     items.push({ kind: "marker", marker: "active-placeholder" });
     items.push(...activeRows);
-    if (workingThreads.length > 0) {
-      items.push({ kind: "marker", marker: "working-header" });
-      items.push(...rowsOf(visibleWorkingThreads, "working"));
-    }
     if (snoozedThreads.length > 0) {
       items.push({ kind: "marker", marker: "snoozed-header" });
       items.push(...rowsOf(visibleSnoozedThreads, "snoozed"));
@@ -2988,6 +2993,121 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
       ? shortcutLabelForCommand(keybindings, "chat.newLocal")
       : undefined);
   const newThreadInProjectShortcutLabel = shortcutLabelForCommand(keybindings, "chat.newLocal");
+  const renderThreadRow = (
+    thread: EnvironmentThreadShell,
+    section: SidebarSection,
+    // The tree row of the project folder this row sits in.
+    folderRow?: string,
+  ) => {
+    const threadKey = scopedThreadKey(scopeThreadRef(thread.environmentId, thread.id));
+    const isCard = section === "active" || section === "pinned" || section === "working";
+    const rowVariant = folderRow
+      ? folderRowsMultiline
+        ? "folder-multiline"
+        : "folder"
+      : isCard
+        ? "card"
+        : "slim";
+    return (
+      <SortableThreadRow
+        key={threadKey}
+        sortableId={threadKey}
+        contextDrag={isContextDrag || section === "working"}
+        sortableDisabled={
+          renamingThreadKey === threadKey ||
+          !draggableThreadKeys.has(threadKey) ||
+          optimisticDrop !== null
+        }
+        thread={thread}
+        variant={rowVariant}
+        navigationParent={
+          folderRow ??
+          (section === "working" || section === "snoozed" || section === "settled"
+            ? `shelf:${section}`
+            : undefined)
+        }
+        variantAction={
+          section === "snoozed" ? "unsnooze" : section === "settled" ? "unsettle" : "settle"
+        }
+        settlementSupported={serverConfigs.has(thread.environmentId)}
+        snoozeSupported={serverConfigs.has(thread.environmentId)}
+        pinningSupported={serverConfigs.has(thread.environmentId)}
+        isPinned={thread.pinnedAt != null}
+        dropVerb={
+          dragState?.activeKey === threadKey
+            ? resolveSidebarDropVerb(dragState.activeSection, dragTargetSection)
+            : null
+        }
+        dragOverPinned={dragState?.activeKey === threadKey && dragTargetSection === "pinned"}
+        sweepAction={actionSweep?.keys.has(threadKey) ? actionSweep.action : null}
+        snoozeWakeLabelText={
+          section === "snoozed" && thread.snoozedUntil != null
+            ? snoozeWakeLabel(thread.snoozedUntil, { now: snoozeNow }, messages)
+            : null
+        }
+        wokeAt={threadWokeAt(thread, { now: snoozeNow })}
+        isActive={routeRowThreadKey === threadKey}
+        revealRef={routeRowThreadKey === threadKey ? revealActiveRow : undefined}
+        isRouteThread={routeThreadKey === threadKey}
+        readOpensPullRequestsInRightPanel={readOpensPullRequestsInRightPanel}
+        jumpLabel={showJumpHints ? (jumpLabelByKey.get(threadKey) ?? null) : null}
+        currentEnvironmentId={primaryEnvironmentId}
+        environmentLabel={environmentLabelById.get(thread.environmentId) ?? null}
+        environmentMachine={environmentMachineById.get(thread.environmentId) ?? "server"}
+        scratchMachineLabel={scratchMachineLabelFor(thread)}
+        project={projectByKey.get(`${thread.environmentId}:${thread.projectId}`) ?? null}
+        projectDisplayName={
+          projectDisplayNameByKey.get(`${thread.environmentId}:${thread.projectId}`) ?? null
+        }
+        providerEntryByInstanceId={
+          providerEntriesByEnvironment.get(thread.environmentId) ?? EMPTY_PROVIDER_ENTRIES
+        }
+        timestampFormat={timestampFormat}
+        onThreadClick={handleThreadClick}
+        onThreadActivate={navigateToThread}
+        onStartRename={startThreadRename}
+        onRenameTitleChange={setRenamingTitle}
+        onCommitRename={commitThreadRename}
+        onCancelRename={cancelThreadRename}
+        isRenaming={renamingThreadKey === threadKey}
+        renamingTitle={renamingThreadKey === threadKey ? renamingTitle : ""}
+        onContextMenu={handleThreadContextMenu}
+        onSettle={attemptSettle}
+        onActionSweepStart={startActionSweep}
+        onUnsettle={attemptUnsettle}
+        onSnooze={attemptSnooze}
+        onUnsnooze={attemptUnsnooze}
+        onUnpin={attemptUnpin}
+        onAcknowledgeWoke={acknowledgeWoke}
+        onFileDropThreads={handleThreadFileDrop}
+      />
+    );
+  };
+  const inboxThreads = filterSidebarV2VisibleThreads(threads, null, delegatedUnderParent);
+  const sideChats: SidebarSideChat[] = (() => {
+    const sideChatShells = threads.filter(
+      (thread) =>
+        thread.lineage.sideChat === true &&
+        thread.lineage.parentThreadId !== null &&
+        thread.archivedAt === null,
+    );
+    if (sideChatShells.length === 0) return [];
+    const parentByKey = new Map(inboxThreads.map((thread) => [threadShellKey(thread), thread]));
+    return sideChatShells.flatMap((thread) => {
+      const parentId = thread.lineage.parentThreadId;
+      const parent =
+        parentId === null
+          ? undefined
+          : parentByKey.get(threadShellKey({ environmentId: thread.environmentId, id: parentId }));
+      return parent === undefined ? [] : [{ thread, parent }];
+    });
+  })();
+  const workingSideChats = sideChats.filter(({ thread }) => isThreadWorking(thread));
+  const openSideChat = ({ thread, parent }: SidebarSideChat) => {
+    const parentRef = scopeThreadRef(parent.environmentId, parent.id);
+    void navigateToThread(parentRef);
+    useRightPanelStore.getState().openSideChat(parentRef, thread.id);
+  };
   return (
     <SidebarFolderDrop>
       <SidebarChromeHeader isElectron={isElectron} />
@@ -3231,21 +3351,30 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
               activeSearchResultIndex={activeSearchResultIndex}
               onClearSearch={clearThreadSearch}
             />
+            {isSearchingThreads ? null : (
+              <>
+                <SidebarInbox
+                  threads={inboxThreads}
+                  sideChats={sideChats}
+                  routeThreadKey={routeThreadKey}
+                  onOpenSideChat={openSideChat}
+                  projectName={(thread) =>
+                    projectDisplayNameByKey.get(`${thread.environmentId}:${thread.projectId}`) ??
+                    null
+                  }
+                  onOpen={(thread) =>
+                    void navigateToThread(scopeThreadRef(thread.environmentId, thread.id))
+                  }
+                />
+                <h2 className="mx-0.5 flex h-10 items-end border-t border-sidebar-border px-2 pb-1.5 text-xs font-medium text-sidebar-muted-foreground">
+                  {gt("Threads")}
+                </h2>
+              </>
+            )}
           </SidebarGroup>
         }
       >
         <SidebarGroup className="flex-1" role="presentation">
-          {isSearchingThreads ? null : (
-            <SidebarInbox
-              threads={filterSidebarV2VisibleThreads(threads, null, delegatedUnderParent)}
-              projectName={(thread) =>
-                projectDisplayNameByKey.get(`${thread.environmentId}:${thread.projectId}`) ?? null
-              }
-              onOpen={(thread) =>
-                void navigateToThread(scopeThreadRef(thread.environmentId, thread.id))
-              }
-            />
-          )}
           {isSearchingThreads ? (
             threadSearchResults.length > 0 ? (
               <TooltipProvider
@@ -3414,127 +3543,6 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                     )}
                   >
                     {(() => {
-                      const renderThreadRow = (
-                        thread: EnvironmentThreadShell,
-                        section: SidebarSection,
-                        // The tree row of the project folder this row sits in.
-                        folderRow?: string,
-                      ) => {
-                        const threadKey = scopedThreadKey(
-                          scopeThreadRef(thread.environmentId, thread.id),
-                        );
-                        const isCard =
-                          section === "active" || section === "pinned" || section === "working";
-                        const rowVariant = folderRow
-                          ? folderRowsMultiline
-                            ? "folder-multiline"
-                            : "folder"
-                          : isCard
-                            ? "card"
-                            : "slim";
-                        return (
-                          <SortableThreadRow
-                            key={threadKey}
-                            sortableId={threadKey}
-                            contextDrag={isContextDrag}
-                            sortableDisabled={
-                              renamingThreadKey === threadKey ||
-                              !draggableThreadKeys.has(threadKey) ||
-                              optimisticDrop !== null
-                            }
-                            thread={thread}
-                            variant={rowVariant}
-                            navigationParent={
-                              folderRow ??
-                              (section === "working" ||
-                              section === "snoozed" ||
-                              section === "settled"
-                                ? `shelf:${section}`
-                                : undefined)
-                            }
-                            variantAction={
-                              section === "snoozed"
-                                ? "unsnooze"
-                                : section === "settled"
-                                  ? "unsettle"
-                                  : "settle"
-                            }
-                            settlementSupported={serverConfigs.has(thread.environmentId)}
-                            snoozeSupported={serverConfigs.has(thread.environmentId)}
-                            pinningSupported={serverConfigs.has(thread.environmentId)}
-                            isPinned={thread.pinnedAt != null}
-                            dropVerb={
-                              dragState?.activeKey === threadKey
-                                ? resolveSidebarDropVerb(dragState.activeSection, dragTargetSection)
-                                : null
-                            }
-                            dragOverPinned={
-                              dragState?.activeKey === threadKey && dragTargetSection === "pinned"
-                            }
-                            sweepAction={
-                              actionSweep?.keys.has(threadKey) ? actionSweep.action : null
-                            }
-                            snoozeWakeLabelText={
-                              section === "snoozed" && thread.snoozedUntil != null
-                                ? snoozeWakeLabel(
-                                    thread.snoozedUntil,
-                                    { now: new Date().toISOString() },
-                                    messages,
-                                  )
-                                : null
-                            }
-                            wokeAt={threadWokeAt(thread, { now: snoozeNow })}
-                            isActive={routeRowThreadKey === threadKey}
-                            revealRef={
-                              routeRowThreadKey === threadKey ? revealActiveRow : undefined
-                            }
-                            isRouteThread={routeThreadKey === threadKey}
-                            readOpensPullRequestsInRightPanel={readOpensPullRequestsInRightPanel}
-                            jumpLabel={
-                              showJumpHints ? (jumpLabelByKey.get(threadKey) ?? null) : null
-                            }
-                            currentEnvironmentId={primaryEnvironmentId}
-                            environmentLabel={
-                              environmentLabelById.get(thread.environmentId) ?? null
-                            }
-                            environmentMachine={
-                              environmentMachineById.get(thread.environmentId) ?? "server"
-                            }
-                            scratchMachineLabel={scratchMachineLabelFor(thread)}
-                            project={
-                              projectByKey.get(`${thread.environmentId}:${thread.projectId}`) ??
-                              null
-                            }
-                            projectDisplayName={
-                              projectDisplayNameByKey.get(
-                                `${thread.environmentId}:${thread.projectId}`,
-                              ) ?? null
-                            }
-                            providerEntryByInstanceId={
-                              providerEntriesByEnvironment.get(thread.environmentId) ??
-                              EMPTY_PROVIDER_ENTRIES
-                            }
-                            timestampFormat={timestampFormat}
-                            onThreadClick={handleThreadClick}
-                            onThreadActivate={navigateToThread}
-                            onStartRename={startThreadRename}
-                            onRenameTitleChange={setRenamingTitle}
-                            onCommitRename={commitThreadRename}
-                            onCancelRename={cancelThreadRename}
-                            isRenaming={renamingThreadKey === threadKey}
-                            renamingTitle={renamingThreadKey === threadKey ? renamingTitle : ""}
-                            onContextMenu={handleThreadContextMenu}
-                            onSettle={attemptSettle}
-                            onActionSweepStart={startActionSweep}
-                            onUnsettle={attemptUnsettle}
-                            onSnooze={attemptSnooze}
-                            onUnsnooze={attemptUnsnooze}
-                            onUnpin={attemptUnpin}
-                            onAcknowledgeWoke={acknowledgeWoke}
-                            onFileDropThreads={handleThreadFileDrop}
-                          />
-                        );
-                      };
                       const from = isContextDrag ? null : (dragState?.activeSection ?? null);
                       const items: ReactNode[] = [
                         <SidebarDraftBlock
@@ -3620,27 +3628,12 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                               />,
                             );
                             break;
-                          case "working-header":
-                            items.push(
-                              <SidebarSectionHeader
-                                key="working-shelf-header"
-                                marker="working-header"
-                                className="mt-auto"
-                                label={gt("Working", { $context: "sidebar section" })}
-                                count={workingThreads.length}
-                                toggle={{
-                                  expanded: workingShelfExpanded,
-                                  onToggle: toggleWorkingShelf,
-                                }}
-                              />,
-                            );
-                            break;
                           case "snoozed-header":
                             items.push(
                               <SidebarSectionHeader
                                 key="snoozed-shelf-header"
                                 marker="snoozed-header"
-                                className={cn(workingThreads.length === 0 && "mt-auto")}
+                                className="mt-auto"
                                 label={gt("Snoozed", { $context: "sidebar section" })}
                                 count={snoozedThreads.length}
                                 toggle={{
@@ -3655,9 +3648,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
                               <SidebarSectionHeader
                                 key="settled-shelf-header"
                                 marker="settled-header"
-                                className={cn(
-                                  workingThreads.length + snoozedThreads.length === 0 && "mt-auto",
-                                )}
+                                className={cn(snoozedThreads.length === 0 && "mt-auto")}
                                 label={gt("Settled", { $context: "sidebar section" })}
                                 count={settledCount}
                                 dragging={from !== null}
@@ -3727,6 +3718,75 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
           ) : null}
         </SidebarGroup>
       </SidebarContent>
+      {!isSearchingThreads && workingThreads.length + workingSideChats.length > 0 ? (
+        <section
+          ref={attachSidebarTree}
+          aria-label={gt("Working", { $context: "sidebar section" })}
+          className="mt-3 flex max-h-[40vh] shrink-0 flex-col border-t border-sidebar-border pt-1.5"
+        >
+          <SidebarGroup className="min-h-0 flex-1">
+            <CollapsibleSectionHeader
+              data-sidebar-row="shelf:working"
+              data-testid="sidebar-working-shelf-toggle"
+              expanded={workingShelfExpanded}
+              onClick={toggleWorkingShelf}
+              accessory={
+                <span className="font-normal tabular-nums">
+                  {workingThreads.length + workingSideChats.length}
+                </span>
+              }
+            >
+              {gt("Working", { $context: "sidebar section" })}
+            </CollapsibleSectionHeader>
+            {visibleWorkingThreads.length > 0 ||
+            (workingShelfExpanded && workingSideChats.length > 0) ? (
+              <ScrollArea
+                hideScrollbars
+                scrollFade
+                viewportTabIndex={-1}
+                className="min-h-0 flex-1"
+              >
+                <TooltipProvider delay={150} closeDelay={0} timeout={400}>
+                  <DndContext
+                    sensors={dndSensors}
+                    autoScroll={false}
+                    onDragStart={(event) => {
+                      contextDragKeyRef.current = String(event.active.id);
+                    }}
+                  >
+                    <SortableContext items={visibleWorkingThreads.map(threadShellKey)}>
+                      <ul role="presentation" className="flex flex-col gap-px pb-1">
+                        {visibleWorkingThreads.map((thread) => renderThreadRow(thread, "working"))}
+                      </ul>
+                    </SortableContext>
+                  </DndContext>
+                </TooltipProvider>
+                {workingShelfExpanded && workingSideChats.length > 0 ? (
+                  <ul className="flex flex-col gap-px pb-1">
+                    {workingSideChats.map((sideChat) => (
+                      <li key={threadShellKey(sideChat.thread)}>
+                        <SidebarInboxRow
+                          reason={gt("Working", { $context: "sidebar section" })}
+                          tone="primary"
+                          project={
+                            projectDisplayNameByKey.get(
+                              `${sideChat.parent.environmentId}:${sideChat.parent.projectId}`,
+                            ) ?? null
+                          }
+                          age={null}
+                          title={sideChat.thread.title}
+                          parentTitle={sideChat.parent.title}
+                          onClick={() => openSideChat(sideChat)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </ScrollArea>
+            ) : null}
+          </SidebarGroup>
+        </section>
+      ) : null}
       <SidebarChromeFooter />
     </SidebarFolderDrop>
   );

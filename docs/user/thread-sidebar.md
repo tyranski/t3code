@@ -58,13 +58,17 @@ in a new thread's model picker to add or remove them. A regular click returns to
 single model. Choose a base branch and send. Each selection starts a separate thread
 and worktree while you stay in the new thread composer. This requires a Git project.
 
-## Inbox
+## Needs you
 
-On web and desktop, the **Inbox** at the top of the sidebar lists every thread that needs you,
+On web and desktop, **Needs you** at the top of the sidebar lists every thread that needs you,
 across all projects and machines, newest first: approvals, questions, guest requests, failed runs,
-usage limits, and finished runs you have not opened yet. Each row shows why it is there, the
-project, and how long ago. Click a row to open the thread; it leaves the inbox once you open a
-finished or failed run, or answer and approve what it asks. Settled threads stay out of it. Your
+usage limits, finished runs you have not opened yet, and threads holding a prompt you wrote but
+did not send (**Unsent draft**, which leaves once you send or discard it). Each row shows why it is there, the
+project, and how long ago. Click a row to open the thread; it leaves **Needs you** once you open a
+finished or failed run, or answer and approve what it asks. Side chats get their own rows,
+marked **Side chat** and named after their thread; clicking one opens it beside its thread.
+It stays put above your thread list and scrolls on its own when it grows long.
+Settled threads stay out of it. Your
 projects and threads stay below it, and its header collapses it.
 
 ## Pin and reorder threads
@@ -143,7 +147,8 @@ open.
 ### Fold working threads (beta)
 
 Threads that are working or waiting on work they will resume from move into a collapsed
-**Working** section below the active list.
+**Working** section. On web and desktop it stays docked at the bottom of the sidebar and scrolls on
+its own, so you can see running work without scrolling past your other threads.
 That includes subagents, watched pull requests with checks still running, monitors, and
 background commands the agent started. A thread whose turn ended while its background commands
 still run shows **Waiting** there instead of Done, including one that left a dev server running;
@@ -314,8 +319,9 @@ with what the thread knows, and the thread keeps working while you ask.
 
 On web and desktop, start a message with `/side` or `/btw`, then your question.
 You can also choose **Side chat** from the **+** menu in the right panel. The side
-chat opens as a tab there, with its own composer. Side chats do not show in the
-sidebar. Find one again under **Side chats** in thread details.
+chat opens as a tab there, with its own composer. Side chats have no row of their own in the
+thread list. While one runs it shows in the sidebar's **Working** section, and when it finishes
+or needs you it shows in **Needs you**. Find one again under **Side chats** in thread details.
 
 A side chat works in the same folder as the thread and starts with the permissions,
 model, and reasoning level shown in the thread's composer, including for its first

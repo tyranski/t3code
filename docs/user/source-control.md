@@ -348,7 +348,7 @@ watched pull request shows an eye; click it to stop watching.
 
 A watched thread counts as working while the pull request still has checks running, so it stays in
 the **Working** section, including after the agent pushes a fix. Once every check has finished,
-including review bots that report as checks, the thread returns to your inbox: what happens next is
+including review bots that report as checks, the thread returns to **Needs you**: what happens next is
 up to a person. That includes a workflow waiting for a maintainer to approve it, which runs only
 once someone does. The watch stays on and still wakes the agent on new comments, failed checks or
 conflicts, and a watched thread never auto-settles.
