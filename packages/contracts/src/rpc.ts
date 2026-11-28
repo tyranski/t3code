@@ -38,6 +38,7 @@ import * as Rpc from "effect/rpc/Rpc";
 import * as RpcGroup from "effect/rpc/RpcGroup";
 import * as RpcMiddleware from "effect/rpc/RpcMiddleware";
 import { NonNegativeInt, TrimmedNonEmptyString } from "./baseSchemas.ts";
+import { SkillFolder, SkillFolderFiles } from "./composerContext.ts";
 import { SecretSourceCheckResult } from "./settingsSecretValue.ts";
 import { SecretReference } from "./secretReference.ts";
 import {
@@ -570,6 +571,8 @@ export const WS_METHODS = {
   serverRetryResourceTelemetry: "server.retryResourceTelemetry",
   serverCheckOtlpEndpoint: "server.checkOtlpEndpoint",
   serverListTextGeneratorModels: "server.listTextGeneratorModels",
+  serverReadProviderSkill: "server.readProviderSkill",
+  serverReadProviderSkillFiles: "server.readProviderSkillFiles",
   serverPrepareTriage: "server.prepareTriage",
   serverSignalProcess: "server.signalProcess",
   serverReportClientActivity: "server.reportClientActivity",
@@ -1053,6 +1056,21 @@ const WsServerListTextGeneratorModelsRpc = Rpc.make(WS_METHODS.serverListTextGen
   payload: ListTextGeneratorModelsInput,
   success: ListTextGeneratorModelsResult,
   error: Schema.Union([TextGeneratorError, EnvironmentAuthorizationError]),
+});
+
+/** Reads a listed Claude skill's folder, so a thread on another machine can follow it. */
+const WsServerReadProviderSkillRpc = Rpc.make(WS_METHODS.serverReadProviderSkill, {
+  payload: Schema.Struct({ instanceId: ProviderInstanceId, name: TrimmedNonEmptyString }),
+  /** `null` when this machine no longer lists the skill or its folder cannot be read. */
+  success: Schema.Struct({ folder: Schema.NullOr(SkillFolder) }),
+  error: EnvironmentAuthorizationError,
+});
+
+/** The same skill's whole folder as bytes, which the client packs into one attachment. */
+const WsServerReadProviderSkillFilesRpc = Rpc.make(WS_METHODS.serverReadProviderSkillFiles, {
+  payload: Schema.Struct({ instanceId: ProviderInstanceId, name: TrimmedNonEmptyString }),
+  success: Schema.Struct({ folder: Schema.NullOr(SkillFolderFiles) }),
+  error: EnvironmentAuthorizationError,
 });
 
 const WsServerPrepareTriageRpc = Rpc.make(WS_METHODS.serverPrepareTriage, {
@@ -2315,6 +2333,8 @@ export const WsRpcGroup = RpcGroup.make(
   WsServerGetResourceTelemetryHistoryRpc,
   WsServerRetryResourceTelemetryRpc,
   WsServerCheckOtlpEndpointRpc,
+  WsServerReadProviderSkillRpc,
+  WsServerReadProviderSkillFilesRpc,
   WsServerListTextGeneratorModelsRpc,
   WsServerPrepareTriageRpc,
   WsServerGetUsageSummaryRpc,

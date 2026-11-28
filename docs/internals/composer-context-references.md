@@ -4,7 +4,13 @@
 
 Inline context references let a user message point at a typed payload from an exact position in
 its prose: an image, a file, a terminal excerpt, a picked page element, a preview annotation, a
-review comment, a file mention, or a skill. This document covers the wire contract and the pure
+review comment, a file mention, or a skill. A `host-skill` reference carries file contents: the
+web client reads a Claude skill's folder from its own machine when the message is sent, so a
+thread on another machine can follow it without anything being copied there. Its kind is
+deliberately not in the known union, so it travels as an unknown record whose payload every server
+version keeps and projects as JSON; a known kind would be dropped by the released server a dev
+container or SSH host runs. That also caps it at the unknown payload limit, so the client leaves
+out files past it. This document covers the wire contract and the pure
 codecs. Editor, rendering, and clipboard behaviour land in later PRs and get their own sections
 here as they arrive.
 

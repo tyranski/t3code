@@ -1,4 +1,5 @@
 import { msg, T, useGT, useMessages } from "gt-react";
+import { HOST_SKILL_CONTEXT_KIND } from "../../lib/hostSkills";
 import type { MessageResolver } from "~/i18n/messages";
 import { useNativeFileDrag } from "../../useNativeFileDrag";
 import { resolvePathLinkTarget } from "@t3tools/shared/fileLinks";
@@ -573,6 +574,17 @@ export function UserMessageContextReferenceChip(props: {
     contextId: props.reference.contextId as ComposerContextId,
     label: props.reference.label,
   });
+  // Its record is one no client knows either; the payload is for the agent, the chip just names it.
+  if (props.reference.kind === HOST_SKILL_CONTEXT_KIND) {
+    return (
+      <SkillChipPopover
+        label={props.reference.label}
+        description={null}
+        copyMarkdown={copyMarkdown}
+        onViewInstructions={undefined}
+      />
+    );
+  }
   return userMessageContextPresentationRegistry.render(props.reference.kind, props.record, {
     environmentId: activeThreadEnvironmentId,
     reference: props.reference,

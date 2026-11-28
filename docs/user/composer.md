@@ -283,6 +283,18 @@ provider. On mobile, both are also available before starting a thread on
 The slash menu also includes skills unless you turn off **Settings → Chat →
 Show skills in slash menu**, under Advanced. Only skills enabled for the provider are listed.
 
+On web and desktop, a Claude thread that runs on another machine, such as a dev container or an
+SSH host, also lists the Claude skills of the computer the app runs on, marked **From** that
+computer. Nothing is copied to the other machine ahead of time: when you send a message that
+uses one, the app reads the skill's folder on your computer and includes its text files in that
+message. Binary files, and files past about 60 KB of text in total, are left out; the agent is told
+which. A skill the other machine has with the same name is used instead.
+
+To include the whole folder, binary files such as templates too, choose the skill with the skill
+button beside **Attach files** instead. The app packs the folder into one zip attachment on your
+message, and the agent unpacks it into a temporary folder for that turn and deletes it afterwards.
+Like any attachment, the zip stays with the thread.
+
 After you add or change skills, plugins, or MCP servers, use **Restart agent
 session** in the command palette on web and desktop. The conversation continues,
 and your next message starts the agent again with the new setup.

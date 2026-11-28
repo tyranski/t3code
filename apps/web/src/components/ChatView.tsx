@@ -1,4 +1,5 @@
 import { m } from "../i18n/messages";
+import { hostClaudeSkillSource } from "../lib/hostSkills";
 import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
 import { useGT, useMessages } from "gt-react";
 import { ChildThreadApprovals } from "./chat/ChildThreadApprovals";
@@ -1278,6 +1279,15 @@ export default function ChatView(props: ChatViewProps) {
         worktreePath: activeThread?.worktreePath ?? null,
       })
     : null;
+  const hostSkillSource = hostClaudeSkillSource({
+    threadEnvironmentId: environmentId,
+    hostEnvironmentId: primaryEnvironment?.environmentId ?? null,
+    machine: primaryEnvironment?.label ?? "",
+    hostProviders:
+      (primaryEnvironment === null
+        ? undefined
+        : providersByEnvironment.get(primaryEnvironment.environmentId)) ?? EMPTY_PROVIDERS,
+  });
   const providerStatuses = resolveProvidersForCwd(
     (providerEnvironmentId === undefined
       ? undefined
@@ -2956,6 +2966,7 @@ export default function ChatView(props: ChatViewProps) {
   });
   const { onSend } = useComposerSend({
     environmentId,
+    hostSkillSource,
     routeThreadKey,
     currentRouteThreadKeyRef,
     draftId,
@@ -3679,6 +3690,7 @@ export default function ChatView(props: ChatViewProps) {
                                 composerRef={composerRef}
                                 composerDraftTarget={composerDraftTarget}
                                 environmentId={environmentId}
+                                hostSkillSource={hostSkillSource}
                                 attachmentUploadsCapabilityKnown={attachmentUploadsCapabilityKnown}
                                 supportsAttachmentUploads={supportsAttachmentUploads}
                                 supportsQuestionAttachments={supportsQuestionAttachments}

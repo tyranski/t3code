@@ -2,6 +2,10 @@ import { OrchestrationDispatchCommandError } from "@t3tools/contracts";
 // @effect-diagnostics-next-line nodeBuiltinImport:off -- A synchronous digest inside the pure provider mapping.
 import * as NodeCrypto from "node:crypto";
 import * as HostProcess from "@t3tools/shared/HostProcess";
+import {
+  readListedClaudeSkillFiles,
+  readListedClaudeSkillFolder,
+} from "./provider/Drivers/ClaudeSkillFolder.ts";
 import * as Context from "effect/Context";
 import * as NodeHttpServerRequest from "@effect/platform-node/NodeHttpServerRequest";
 import * as SecureRandom from "effect/crypto/SecureRandom";
@@ -2735,6 +2739,14 @@ export const layerWsRpc = (
         [WS_METHODS.serverRetryResourceTelemetry]: (_input) => resourceTelemetry.retry,
         [WS_METHODS.serverCheckOtlpEndpoint]: (input) => otlpEndpointCheck.check(input),
         [WS_METHODS.serverListTextGeneratorModels]: (input) => textGenerators.listModels(input),
+        [WS_METHODS.serverReadProviderSkill]: (input) =>
+          providerRegistry.getProviders.pipe(
+            Effect.flatMap((providers) => readListedClaudeSkillFolder(providers, input)),
+          ),
+        [WS_METHODS.serverReadProviderSkillFiles]: (input) =>
+          providerRegistry.getProviders.pipe(
+            Effect.flatMap((providers) => readListedClaudeSkillFiles(providers, input)),
+          ),
         [WS_METHODS.serverPrepareTriage]: (input) => triage.prepare(input),
         [WS_METHODS.serverSignalProcess]: (input) => processDiagnostics.signal(input),
         [WS_METHODS.serverReportClientActivity]: (input, metadata) =>

@@ -209,6 +209,40 @@ export const SkillContextRecord = Schema.Struct({
 });
 export type SkillContextRecord = typeof SkillContextRecord.Type;
 
+export const SKILL_FOLDER_MAX_FILES = 100;
+export const SKILL_FOLDER_MAX_TEXT_CHARS = 400_000;
+
+/** A skill's folder as text: the files a reader can follow, and the ones left out. */
+export const SkillFolder = Schema.Struct({
+  directory: ShortString,
+  files: Schema.Array(
+    Schema.Struct({ path: ShortString, text: BoundedString(SKILL_FOLDER_MAX_TEXT_CHARS) }),
+  ).check(
+    Schema.isMaxLength(SKILL_FOLDER_MAX_FILES),
+    Schema.makeFilter(
+      (files) =>
+        files.reduce((total, file) => total + file.text.length, 0) <= SKILL_FOLDER_MAX_TEXT_CHARS,
+    ),
+  ),
+  /** Binary, unreadable, or past the size limits. */
+  omittedFiles: Schema.Array(ShortString).check(Schema.isMaxLength(1_000)),
+});
+export type SkillFolder = typeof SkillFolder.Type;
+
+export const SKILL_FOLDER_FILES_MAX_COUNT = 500;
+export const SKILL_FOLDER_FILES_MAX_BYTES = 30 * 1024 * 1024;
+
+/** A skill's whole folder as bytes, for a client to pack into one attachment. */
+export const SkillFolderFiles = Schema.Struct({
+  directory: ShortString,
+  files: Schema.Array(Schema.Struct({ path: ShortString, base64: Schema.String })).check(
+    Schema.isMaxLength(SKILL_FOLDER_FILES_MAX_COUNT),
+  ),
+  /** Unreadable, or past the size limits. */
+  omittedFiles: Schema.Array(ShortString).check(Schema.isMaxLength(10_000)),
+});
+export type SkillFolderFiles = typeof SkillFolderFiles.Type;
+
 export const ThreadContextRecord = Schema.Struct({
   ...recordBase,
   kind: Schema.Literal("thread"),

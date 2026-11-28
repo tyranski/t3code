@@ -23,6 +23,7 @@ import {
   AuthOrchestrationOperateScope,
   DEFAULT_MODEL,
   type EnvironmentId,
+  type ComposerContextRecord,
   type ModelSelection,
   type PreviewAnnotationPayload,
   type ScopedThreadRef,
@@ -63,7 +64,7 @@ import { type ChatMessage, DEFAULT_INTERACTION_MODE } from "../../types";
 import { recordPromptSent } from "../GitHubStarPrompt";
 import { stackedThreadToast, toastManager } from "../ui/toast";
 import { writeTextToClipboard } from "~/hooks/useCopyToClipboard";
-import { newMessageId, newThreadId } from "~/lib/utils";
+import { newMessageId, newThreadId, randomUUID } from "~/lib/utils";
 import { useNewThreadHandler } from "../../hooks/useHandleNewThread";
 import { buildThreadRouteParams } from "../../threadRoutes";
 import {
@@ -94,7 +95,15 @@ import {
   previewAnnotationContextReference,
   responseContextReference,
 } from "../../lib/composerContextRecords";
-import { environmentServerConfigsAtom } from "../../state/server";
+import { environmentServerConfigsAtom, serverEnvironment } from "../../state/server";
+import { useAtomCommand } from "../../state/use-atom-command";
+import {
+  hostSkillContextRecord,
+  referenceHostSkillMentions,
+  type HostSkill,
+  type HostSkillSource,
+} from "../../lib/hostSkills";
+import { toKindScopedComposerContextId } from "@t3tools/shared/composerContextReferences";
 import { threadEnvironment } from "../../state/threads";
 import { runMobileComposerTransition } from "./draftHeroTransition";
 import { useClientSettingsHydrated } from "../../hooks/useSettings";
@@ -171,6 +180,7 @@ type TimelineFollow = ReturnType<typeof useTimelineFollow>;
 
 interface ComposerSendInput {
   readonly environmentId: EnvironmentId;
+  readonly hostSkillSource: HostSkillSource | null;
   readonly routeThreadKey: string;
   readonly currentRouteThreadKeyRef: { readonly current: string | null };
   readonly draftId: DraftId | null;
@@ -272,6 +282,7 @@ interface ComposerSendInput {
 export function useComposerSend(input: ComposerSendInput) {
   const {
     environmentId,
+    hostSkillSource,
     routeThreadKey,
     currentRouteThreadKeyRef,
     draftId,
@@ -345,6 +356,41 @@ export function useComposerSend(input: ComposerSendInput) {
     linkCheckoutPullRequest,
   } = input;
   const linkedEnvironments = useLinkedEnvironments(environmentId);
+  const readProviderSkill = useAtomCommand(serverEnvironment.readProviderSkill);
+  // Read only now, when the message goes out; the files ride in it and nothing is copied over.
+  const readHostSkillsForSend = async (
+    prompt: string,
+    hostSkills: ReadonlyMap<string, HostSkill>,
+  ): Promise<{ text: string; records: ReadonlyArray<ComposerContextRecord> } | null> => {
+    if (hostSkillSource === null || hostSkills.size === 0) return { text: prompt, records: [] };
+    const { text, mentions } = referenceHostSkillMentions(prompt, hostSkills, () =>
+      toKindScopedComposerContextId("host-skill", randomUUID()),
+    );
+    const records: ComposerContextRecord[] = [];
+    for (const mention of mentions) {
+      const result = await readProviderSkill({
+        environmentId: hostSkillSource.environmentId,
+        input: { instanceId: mention.instanceId, name: mention.skill.name },
+      });
+      const folder = result._tag === "Success" ? result.value.folder : null;
+      if (folder === null) {
+        toastManager.add(
+          stackedThreadToast({
+            type: "error",
+            title: m(
+              msg("Couldn't read the skill {skill} from {machine}", {
+                skill: mention.skill.name,
+                machine: hostSkillSource.machine,
+              }),
+            ),
+          }),
+        );
+        return null;
+      }
+      records.push(hostSkillContextRecord(mention, hostSkillSource.machine, folder));
+    }
+    return { text, records };
+  };
   const handleNewThread = useNewThreadHandler();
   const navigate = useNavigate();
   const clientSettingsHydrated = useClientSettingsHydrated();
@@ -599,6 +645,7 @@ export function useComposerSend(input: ComposerSendInput) {
       selectedProviderModels: ctxSelectedProviderModels,
       selectedPromptEffort: ctxSelectedPromptEffort,
       selectedModelSelection: ctxSelectedModelSelection,
+      hostSkills: ctxHostSkills,
     } = sendCtx;
     const { images: composerImages, previewAnnotations: composerPreviewAnnotations } =
       mergeDirectPreviewAnnotation({
@@ -618,7 +665,7 @@ export function useComposerSend(input: ComposerSendInput) {
       useComposerDraftStore.getState().getComposerDraft(composerDraftTarget)?.replyTo ?? null;
     // The reply leads the message, so its card sits above the text it is about. Text that
     // already points at that response, from a pasted card, keeps its one reference.
-    const promptForSend =
+    let promptForSend =
       replyTo && !collectInlineContextIds(draftPrompt).includes(replyTo.contextId)
         ? `${formatInlineContextReference(responseContextReference(replyTo))} ${draftPrompt}`
         : draftPrompt;
@@ -686,6 +733,9 @@ export function useComposerSend(input: ComposerSendInput) {
       );
       return;
     }
+    const hostSkillRead = await readHostSkillsForSend(promptForSend, ctxHostSkills);
+    if (hostSkillRead === null) return;
+    promptForSend = hostSkillRead.text;
     const {
       trimmedPrompt: trimmed,
       sendableTerminalContexts: sendableComposerTerminalContexts,
@@ -866,6 +916,7 @@ export function useComposerSend(input: ComposerSendInput) {
         previewAnnotations: composerPreviewAnnotationsSnapshot,
         threadContexts: composerThreadContextsSnapshot,
         environmentContexts: composerEnvironmentContextsSnapshot,
+        hostSkills: hostSkillRead.records,
         replyTo,
         attachments: composerAttachmentsSnapshot.map((attachment, index) => ({
           attachment,

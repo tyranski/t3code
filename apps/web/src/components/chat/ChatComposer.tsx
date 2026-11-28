@@ -1,4 +1,13 @@
 import { copySnapshot } from "./copySnapshot";
+import {
+  buildHostSkillArchive,
+  hostOnlySkills,
+  type HostSkill,
+  type HostSkillSource,
+} from "../../lib/hostSkills";
+import { HostSkillPickerButton } from "./HostSkillPickerButton";
+import { serverEnvironment } from "../../state/server";
+import { useAtomCommand } from "../../state/use-atom-command";
 import { VoiceInputSetup } from "./VoiceInputSetup";
 import { useComposerTypingGuard } from "./useComposerTypingGuard";
 import { insertAttachmentReferencesForDraft } from "./composerAttachmentReferences";
@@ -352,6 +361,8 @@ export interface ChatComposerHandle {
     selectedModel: string;
     selectedProviderModels: ReadonlyArray<ServerProvider["models"][number]>;
     shownPendingApprovalIds: ReadonlyArray<RuntimeRequestId>;
+    /** Skills read from the client's own machine at send, by name. */
+    hostSkills: ReadonlyMap<string, HostSkill>;
   };
   validateProviderInput: (providerInput: string) => boolean;
   setMultipleModelSelections: (selections: ReadonlyArray<ModelSelection>) => void;
@@ -360,6 +371,8 @@ export interface ChatComposerHandle {
 export interface ChatComposerProps {
   composerDraftTarget: ScopedThreadRef | DraftId;
   environmentId: EnvironmentId;
+  /** This client's own machine's Claude skills, when the thread runs on another. */
+  hostSkillSource: HostSkillSource | null;
   canOperateThread: boolean;
   attachmentUploadsCapabilityKnown: boolean;
   supportsAttachmentUploads: boolean;
@@ -498,6 +511,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
   const {
     composerDraftTarget,
     environmentId,
+    hostSkillSource,
     canOperateThread,
     attachmentUploadsCapabilityKnown,
     supportsAttachmentUploads,
@@ -960,9 +974,34 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
         (multipleModelSelections === null ? providerSendBlockReason : null)));
   const isSendDisabled = sendDisabledReason !== null;
   const selectedProviderStatus = selectedProviderEntry?.snapshot ?? null;
-  const selectedProviderSkills = selectedProviderStatus
+  const threadProviderSkills = selectedProviderStatus
     ? resolveProviderSkillsForCwd(selectedProviderStatus, gitCwd)
     : NO_PROVIDER_SKILLS;
+  const [hostSkillPickBusy, setHostSkillPickBusy] = useState(false);
+  const readProviderSkillFiles = useAtomCommand(serverEnvironment.readProviderSkillFiles);
+  const hostSkills = hostOnlySkills(
+    selectedProvider === "claudeAgent" ? hostSkillSource : null,
+    threadProviderSkills,
+  );
+  const hostProviderSkills = [...hostSkills.values()].map(({ skill }) => {
+    const description = skill.shortDescription ?? skill.description;
+    const machine = hostSkillSource?.machine ?? "";
+    return {
+      ...skill,
+      shortDescription:
+        description === undefined
+          ? gt("From {machine}", { machine, $context: "skill on the user's own computer" })
+          : gt("From {machine}: {description}", {
+              machine,
+              description,
+              $context: "skill on the user's own computer",
+            }),
+    };
+  });
+  const selectedProviderSkills =
+    hostProviderSkills.length === 0
+      ? threadProviderSkills
+      : [...threadProviderSkills, ...hostProviderSkills];
   const selectedProviderSlashCommands = selectedProviderStatus
     ? resolveProviderSlashCommandsForCwd(selectedProviderStatus, gitCwd)
     : NO_PROVIDER_SLASH_COMMANDS;
@@ -3306,6 +3345,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
         selectedProvider,
         selectedModel,
         selectedProviderModels,
+        hostSkills,
       }),
       setMultipleModelSelections,
       validateProviderInput: (providerInput: string) => {
@@ -3360,6 +3400,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
       selectedInstanceId,
       reportedModelSelection,
       selectedModelSelection,
+      hostSkills,
       multipleModelSelections,
       setMultipleModelSelections,
       routeKind,
@@ -3414,6 +3455,41 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
         canOperateThread={canOperateThread}
         onPreviewFile={setPreviewFileId}
         onRemoveFile={removeComposerFileFromDraft}
+      />
+    ) : null;
+  const attachHostSkill = async (hostSkill: HostSkill, source: HostSkillSource) => {
+    const result = await readProviderSkillFiles({
+      environmentId: source.environmentId,
+      input: { instanceId: hostSkill.instanceId, name: hostSkill.skill.name },
+    });
+    const folder = result._tag === "Success" ? result.value.folder : null;
+    if (folder === null) {
+      toastManager.add({
+        type: "error",
+        title: gt("Couldn't read the skill {skill} from {machine}", {
+          skill: hostSkill.skill.name,
+          machine: source.machine,
+        }),
+      });
+      return;
+    }
+    const archive = await buildHostSkillArchive(hostSkill.skill.name, folder.files);
+    insertComposerText(`$${hostSkill.skill.name} `, "cursor");
+    await addComposerAttachments([archive]);
+  };
+  // React Compiler cannot compile try/finally, so the busy flag clears on the promise.
+  const pickHostSkill = (hostSkill: HostSkill) => {
+    if (hostSkillSource === null) return Promise.resolve();
+    setHostSkillPickBusy(true);
+    return attachHostSkill(hostSkill, hostSkillSource).finally(() => setHostSkillPickBusy(false));
+  };
+  const hostSkillPicker =
+    hostSkills.size > 0 && hostSkillSource !== null ? (
+      <HostSkillPickerButton
+        machine={hostSkillSource.machine}
+        skills={[...hostSkills.values()]}
+        busy={hostSkillPickBusy}
+        onPick={(hostSkill) => void pickHostSkill(hostSkill)}
       />
     ) : null;
   const composerAttachButton = showComposerAttachAction ? (
@@ -3813,6 +3889,9 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
               >
                 {composerAttachButton && !dictationTakesFooter ? (
                   <div className="me-2">{composerAttachButton}</div>
+                ) : null}
+                {hostSkillPicker && !dictationTakesFooter ? (
+                  <div className="me-2">{hostSkillPicker}</div>
                 ) : null}
                 <div
                   data-chat-composer-actions="right"
