@@ -39,6 +39,8 @@ export class DesktopEnvironment extends Context.Service<
     readonly processArch: string;
     readonly isPackaged: boolean;
     readonly isDevelopment: boolean;
+    /** Development builds open DevTools with the window unless told not to. */
+    readonly openDevToolsOnLaunch: boolean;
     readonly appVersion: string;
     readonly appPath: string;
     readonly resourcesPath: string;
@@ -191,6 +193,7 @@ const make = Effect.fn("desktop.environment.make")(function* (
     processArch: input.processArch,
     isPackaged: input.isPackaged,
     isDevelopment,
+    openDevToolsOnLaunch: isDevelopment && !config.hideDevTools,
     appVersion: input.appVersion,
     appPath: input.appPath,
     resourcesPath,

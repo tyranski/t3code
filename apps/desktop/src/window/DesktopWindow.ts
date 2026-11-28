@@ -1008,7 +1008,7 @@ export const make = Effect.gen(function* () {
     // Desktop IPC only answers the main window, so register it before its renderer can call in.
     yield* electronWindow.setMain(window);
     loadApplication();
-    if (environment.isDevelopment) {
+    if (environment.openDevToolsOnLaunch) {
       window.webContents.openDevTools({ mode: "detach" });
     }
 
